@@ -1,6 +1,7 @@
 import { getDeps } from "../../di";
 import { Anime, AnimeDetail, AppError, AutocompleteAnime, HomeData } from "../../domain/entities";
 import { CacheRepo } from "../../domain/repositories/cacheRepo";
+import { logger } from "../../utils/logger";
 
 interface FetchOptions<T> {
   cacheKey: string;
@@ -127,6 +128,7 @@ async function handleAuthError<T>(
       onSuccess?.(data);
     }
   } catch (retryError) {
+    logger.error("fetchWithCache", "Retry failed after session recovery", retryError);
     if (isMounted) {
       setError(
         set,

@@ -14,7 +14,6 @@ type Resolver = (url: string | null) => void;
  */
 export class WebViewBridge implements IWebViewBridge {
   private activeDecryptions = new Map<string, Resolver>();
-  private currentRequestId: string | null = null;
   private navigateFn: NavigateFn | null = null;
   private injectFn: ((code: string) => void) | null = null;
   private pageLoadResolver: ((value: void) => void) | null = null;
@@ -58,9 +57,12 @@ export class WebViewBridge implements IWebViewBridge {
       if (type === "DECRYPTION_RESULT") {
         let { id, data: url, error } = data;
 
-        // Compatibility: if the bootstrap sends 'stream_auto', map it to the current active request
-        if (id === "stream_auto" && this.currentRequestId) {
-          id = this.currentRequestId;
+        // Compatibility: if the bootstrap sends 'stream_auto', map it to the most recent pending request
+        if (id === "stream_auto") {
+          const lastRequestId = Array.from(this.activeDecryptions.keys()).pop();
+          if (lastRequestId) {
+            id = lastRequestId;
+          }
         }
 
         const resolve = this.activeDecryptions.get(id);
@@ -71,14 +73,15 @@ export class WebViewBridge implements IWebViewBridge {
         }
       }
 
-      // Generic embed video URL interception — resolve the current pending request
+      // Generic embed video URL interception — resolve the most recent pending request
       if (type === "EMBED_VIDEO_URL") {
-        const requestId = this.currentRequestId;
-        if (requestId) {
-          const autoResolve = this.activeDecryptions.get(requestId);
-          logger.debug("WebViewBridge", `EMBED_VIDEO_URL intercepted: ${data.url}, resolving request: ${requestId}`);
+        // Resolve the most recent active request (last one in the map)
+        const lastRequestId = Array.from(this.activeDecryptions.keys()).pop();
+        if (lastRequestId) {
+          const autoResolve = this.activeDecryptions.get(lastRequestId);
+          logger.debug("WebViewBridge", `EMBED_VIDEO_URL intercepted: ${data.url}, resolving request: ${lastRequestId}`);
           if (autoResolve) {
-            this.activeDecryptions.delete(requestId);
+            this.activeDecryptions.delete(lastRequestId);
             autoResolve(data.url);
           }
         }
@@ -131,9 +134,11 @@ export class WebViewBridge implements IWebViewBridge {
   async resolveStreamUrl(videoUrl: string): Promise<string | null> {
     if (!this.navigateFn) throw new Error("WebView navigation not registered");
 
-    // Generate unique ID to avoid race conditions between episode switches
+    // Generate unique ID for this request
     const requestId = `stream_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    this.currentRequestId = requestId;
+
+    // Cancel any existing pending requests to prevent cross-contamination
+    this.clearPendingRequests();
 
     // --- SESSION WASH STEP ---
     // Navigate to Home first to reset session/cookies and obtain a clean Referer
@@ -159,8 +164,17 @@ export class WebViewBridge implements IWebViewBridge {
     this.scheduleJwplayerExtraction(requestId);
 
     const result = await promise;
-    this.currentRequestId = null; // Clear current request after resolution
     return result;
+  }
+
+  /**
+   * Clears all pending decryption requests.
+   */
+  private clearPendingRequests(): void {
+    for (const [id, resolve] of this.activeDecryptions) {
+      resolve(null);
+      this.activeDecryptions.delete(id);
+    }
   }
 
   // ─── Private helpers ─────────────────────────────────────────────────

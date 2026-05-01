@@ -1,0 +1,48 @@
+import { useEffect, useState } from "react";
+import { AnimeDetail, AppError } from "../domain/entities";
+import { useAnimeStore } from "../store/animeStore";
+import { logger } from "../utils/logger";
+
+interface UseAnimeDataResult {
+  anime: AnimeDetail | null;
+  isLoading: boolean;
+  error: AppError | null;
+  hasLoaded: boolean;
+  refresh: () => void;
+}
+
+export function useAnimeData(slug: string): UseAnimeDataResult {
+  const {
+    activeAnime: anime,
+    isDetailsLoading: isLoading,
+    fetchDetails,
+    error,
+  } = useAnimeStore();
+
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!anime || anime.url !== slug) {
+      fetchDetails(slug)
+        .catch((err) => {
+          logger.error("useAnimeData", "Failed to fetch anime details", err);
+        });
+    }
+  }, [slug, fetchDetails, anime]);
+
+  useEffect(() => {
+    if (anime) setHasLoaded(true);
+  }, [anime]);
+
+  const refresh = () => {
+    fetchDetails(slug, true);
+  };
+
+  return {
+    anime,
+    isLoading,
+    error,
+    hasLoaded,
+    refresh,
+  };
+}

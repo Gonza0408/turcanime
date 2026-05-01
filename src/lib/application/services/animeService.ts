@@ -149,23 +149,24 @@ export async function fetchSearchData(query: string, signal: AbortSignal, force:
   );
 }
 
-export async function fetchSuggestionsData(query: string): Promise<AutocompleteAnime[]> {
+export async function fetchSuggestionsData(query: string, signal?: AbortSignal): Promise<AutocompleteAnime[]> {
   if (!query || query.length < 3) {
     return [];
   }
-  const cKey = suggestKey(query);
 
-  const cached = await cache.get<AutocompleteAnime[]>(cKey);
-  if (cached) {
-    return cached;
-  }
-
+  const controller = signal ? undefined : new AbortController();
   try {
-    const data = await getDeps().getProvider().getSuggestions(query);
-    await cache.set(cKey, data, ANIME_CACHE.SUGGESTIONS);
-    return data;
-  } catch {
-    return [];
+    return await fetchWithCache(
+      {
+        cacheKey: suggestKey(query),
+        cacheTtl: ANIME_CACHE.SUGGESTIONS,
+        errorMessage: "Error loading suggestions",
+        fetchFn: (sig: AbortSignal) => getDeps().getProvider().getSuggestions(query),
+      },
+      signal || controller!.signal
+    ).then(result => result.data || []);
+  } finally {
+    controller?.abort();
   }
 }
 

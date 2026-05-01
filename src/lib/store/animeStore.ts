@@ -106,8 +106,13 @@ export const useAnimeStore = create<AnimeState>((set, get) => ({
 
   fetchSuggestions: async (query: string) => {
     set({ isSuggestionsLoading: true });
-    const data = await fetchSuggestionsData(query);
-    set({ suggestions: data, isSuggestionsLoading: false });
+    const controller = new AbortController();
+    try {
+      const data = await fetchSuggestionsData(query, controller.signal);
+      set({ suggestions: data, isSuggestionsLoading: false });
+    } finally {
+      controller.abort();
+    }
   },
 
   fetchDetails: async (slug: string, force = false) => {

@@ -11,6 +11,7 @@ import {
     getVisibleEpisodes,
     orderEpisodes,
 } from "../domain/services/episodeService";
+import { logger } from "../utils/logger";
 
 // ─── Persisted active range index ──────────────────────────────────────
 
@@ -44,7 +45,7 @@ export function usePersistedRange(slug: string | undefined) {
         setIsRestoring(false);
       })
       .catch((error) => {
-        console.error('Error loading persisted range:', error);
+        logger.error("usePersistedRange", "Failed to load persisted range", error);
         setActiveRangeIdx(0);
         setIsRestoring(false);
       });
@@ -55,7 +56,7 @@ export function usePersistedRange(slug: string | undefined) {
       setActiveRangeIdx(idx);
       if (slug) {
         getDeps().storage.set(`range_${slug}`, idx).catch((error) => {
-          console.error('Error persisting range:', error);
+          logger.error("usePersistedRange", "Failed to persist range", error);
         });
       }
     },

@@ -3,6 +3,7 @@ import { Episode } from "../domain/entities";
 import { useAnimeStore } from "../store/animeStore";
 import { usePlayerStore } from "../store/playerStore";
 import { useUserStore } from "../store/userStore";
+import { logger } from "../utils/logger";
 import {
     useEpisodePagination,
     usePersistedRange,
@@ -40,7 +41,7 @@ export function useAnimeDetailScreen(slug: string) {
           // Details loaded successfully
         }
       }).catch((error) => {
-        console.error('[useAnimeDetailScreen] Failed to fetch details:', error);
+        logger.error("useAnimeDetailScreen", "Failed to fetch details", error);
       });
     }
     return () => {

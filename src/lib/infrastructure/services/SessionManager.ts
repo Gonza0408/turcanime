@@ -10,9 +10,10 @@ export class SessionManager implements ISessionManager {
   constructor(private storage: IStorage) {}
 
   async initialize(): Promise<void> {
+    let promiseResolver: (() => void) | null = null;
+
     try {
       const existingSession = await this.getSession();
-      let promiseResolver: (() => void) | null = null;
 
       if (!existingSession) {
         logger.info("SessionManager", "No existing session, creating initial session");
@@ -29,19 +30,20 @@ export class SessionManager implements ISessionManager {
       } else {
         logger.debug("SessionManager", "Existing session found (no cookies)");
       }
-
-      // Create a promise that resolves when cookies are updated from WebView
-      this.sessionReadyPromise = new Promise(resolve => {
-        this.sessionReadyResolver = resolve;
-        // Resolve immediately if we already have cookies
-        if (promiseResolver) {
-          resolve();
-        }
-      });
     } catch (error) {
-      logger.error("SessionManager", "Failed to initialize", error);
-      throw error;
+      logger.error("SessionManager", "Failed to load session, continuing with empty", error);
+      // Continue - don't throw, we'll create promise below
     }
+
+    // Always create the promise, even if session loading failed
+    // This ensures waitForCookies() never hangs indefinitely
+    this.sessionReadyPromise = new Promise(resolve => {
+      this.sessionReadyResolver = resolve;
+      // Resolve immediately if we already have cookies
+      if (promiseResolver) {
+        resolve();
+      }
+    });
   }
 
   async getSession(): Promise<ISession | null> {

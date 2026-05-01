@@ -6,7 +6,7 @@ export interface IContentProvider {
   search(query: string, options?: { signal?: AbortSignal }): Promise<Anime[]>;
   getSuggestions(query: string): Promise<AutocompleteAnime[]>;
   getDetails(slug: string, options?: { signal?: AbortSignal }): Promise<AnimeDetail | null>;
-  getEpisodeServers(slug: string, number: string): Promise<VideoServer[]>;
+  getEpisodeServers(slug: string, number: string, options?: { signal?: AbortSignal }): Promise<VideoServer[]>;
 }
 
 export interface IStorage {

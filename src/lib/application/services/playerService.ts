@@ -29,24 +29,33 @@ interface ResolveStreamResult {
 export async function fetchEpisodeServers(
   slug: string,
   number: string,
-  force: boolean
+  force: boolean,
+  signal?: AbortSignal
 ): Promise<FetchServersResult> {
   const cKey = serverKey(slug, number);
 
-  // Check cache first
-  if (!force) {
+  // Check cache first (skip if aborted)
+  if (!force && !signal?.aborted) {
     const cached = await cache.get<VideoServer[]>(cKey);
     if (cached) {
       return { servers: cached, error: null };
     }
   }
 
+  // Check abort after cache read
+  if (signal?.aborted) {
+    return { servers: [], error: new Error("Request aborted") };
+  }
+
   // Fetch from provider
   try {
-    const data = await getDeps().getProvider().getEpisodeServers(slug, number);
+    const data = await getDeps().getProvider().getEpisodeServers(slug, number, { signal });
     await cache.set(cKey, data, PLAYER_CACHE.SERVERS);
     return { servers: data, error: null };
   } catch (e: unknown) {
+    if (e instanceof Error && e.name === "AbortError") {
+      return { servers: [], error: e };
+    }
     logger.error("playerService", "fetchEpisodeServers failed", e);
     return { servers: [], error: e instanceof Error ? e : new Error(String(e)) };
   }

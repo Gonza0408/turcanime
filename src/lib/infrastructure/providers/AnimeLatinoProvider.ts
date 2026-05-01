@@ -131,8 +131,8 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
     return result;
   }
 
-  async getEpisodeServers(slug: string, number: string): Promise<VideoServer[]> {
-    const res = await this.fetchWithSession(`/ver/${slug}/${number}`);
+  async getEpisodeServers(slug: string, number: string, options?: { signal?: AbortSignal }): Promise<VideoServer[]> {
+    const res = await this.fetchWithSession(`/ver/${slug}/${number}`, options || {});
     const html = await res.text();
     let servers: VideoServer[] = [];
 

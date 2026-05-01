@@ -7,9 +7,22 @@ import { CacheRepo } from "../../domain/repositories/cacheRepo";
 const cache = CacheRepo.getInstance(getDeps().storage);
 
 const HOME_CACHE_KEY = "ch_home";
-const searchKey = (q: string) => `search_${q.toLowerCase().trim()}`;
-const suggestKey = (q: string) => `suggestions_${q.toLowerCase().trim()}`;
+const searchKey = (q: string) => `search_${encodeCacheKey(q)}`;
+const suggestKey = (q: string) => `suggestions_${encodeCacheKey(q)}`;
 const detailsKey = (s: string) => `anime_${s}`;
+
+/**
+ * Encode a string to be safe for use as a cache key.
+ * Replaces special characters that could cause collisions or storage issues.
+ */
+function encodeCacheKey(str: string): string {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]/g, '_') // Replace non-alphanumeric with underscore
+    .replace(/_+/g, '_') // Collapse multiple underscores
+    .slice(0, 50); // Limit length to prevent excessively long keys
+}
 
 interface FetchResult<T> {
   data: T | null;

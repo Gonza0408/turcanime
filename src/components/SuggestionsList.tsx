@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: Theme.spacing.lg,
-    borderBottomWidth: Theme.borders.thin,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Theme.colors.border,
   },
   posterWrap: {

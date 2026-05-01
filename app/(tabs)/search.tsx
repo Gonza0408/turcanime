@@ -180,12 +180,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: Theme.edge.horizontal
+    paddingHorizontal: Theme.edge.horizontal,
   },
   listContent: {
     paddingBottom: TAB_BAR_BOTTOM_OFFSET,
     paddingTop: Theme.spacing.lg,
-    paddingHorizontal: 0,
   },
   columnWrapper: {
     justifyContent: "flex-start",

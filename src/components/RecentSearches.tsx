@@ -1,8 +1,10 @@
+import { TAB_BAR_BOTTOM_OFFSET } from "@/constants/layout";
+import { Theme } from "@/constants/Theme";
 import { Feather } from "@expo/vector-icons";
 import React, { memo } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
-import { Theme } from "../constants/Theme";
 import { AnimatedPressable } from "./AnimatedPressable";
+import { SectionTitle } from "./ui/SectionTitle";
 import { ThemedText } from "./ui/ThemedText";
 
 interface RecentSearchesProps {
@@ -16,20 +18,20 @@ export const RecentSearches = memo(({ searches, onSelect, onRemove }: RecentSear
 
   return (
     <View style={styles.container}>
-      <ThemedText variant="label" color="muted" style={styles.header}>Búsquedas recientes</ThemedText>
+      <SectionTitle>Búsquedas recientes</SectionTitle>
       <FlatList
         data={searches}
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
-          <View style={styles.row}>
-            <AnimatedPressable style={styles.clickable} onPress={() => onSelect(item)}>
+          <AnimatedPressable style={styles.row} onPress={() => onSelect(item)}>
+            <View style={styles.left}>
               <Feather name="clock" size={Theme.dimensions.iconSm} color={Theme.colors.primary} />
               <ThemedText style={styles.text}>{item}</ThemedText>
-            </AnimatedPressable>
-            <AnimatedPressable style={styles.remove} onPress={() => onRemove(item)}>
+            </View>
+            <AnimatedPressable style={styles.remove} onPress={(e) => { e.stopPropagation(); onRemove(item); }}>
               <Feather name="x" size={Theme.dimensions.iconSm} color={Theme.colors.text.muted} />
             </AnimatedPressable>
-          </View>
+          </AnimatedPressable>
         )}
         scrollEnabled={false}
       />
@@ -40,15 +42,19 @@ export const RecentSearches = memo(({ searches, onSelect, onRemove }: RecentSear
 RecentSearches.displayName = "RecentSearches";
 
 const styles = StyleSheet.create({
-  container: { marginTop: Theme.spacing.md },
-  header: { marginBottom: Theme.spacing.sm },
+  container: {
+    marginTop: Theme.spacing.xl,
+    paddingBottom: TAB_BAR_BOTTOM_OFFSET,
+  },
   row: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: Theme.spacing.sm,
+    paddingVertical: Theme.spacing.lg,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Theme.colors.border,
   },
-  clickable: { flexDirection: "row", alignItems: "center", flex: 1 },
-  text: { marginLeft: Theme.spacing.sm, fontSize: Theme.fontSize.m },
-  remove: { padding: Theme.spacing.sm }
+  left: { flexDirection: "row", alignItems: "center", flex: 1 },
+  text: { marginLeft: Theme.spacing.md, fontSize: Theme.fontSize.m },
+  remove: { padding: Theme.spacing.sm },
 });

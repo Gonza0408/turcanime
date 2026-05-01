@@ -24,6 +24,7 @@ export interface AppDependencies {
 
 let deps: AppDependencies | null = null;
 let initPromise: Promise<void> | null = null;
+let isInitializing = false;
 
 /**
  * Initialize the DI container with concrete implementations.
@@ -33,6 +34,12 @@ export function initializeDeps(): { deps: AppDependencies; ready: Promise<void> 
   if (deps) {
     return { deps, ready: Promise.resolve() };
   }
+
+  if (isInitializing) {
+    return { deps: deps!, ready: initPromise! };
+  }
+
+  isInitializing = true;
 
   deps = {
     storage,
@@ -50,6 +57,8 @@ export function initializeDeps(): { deps: AppDependencies; ready: Promise<void> 
     initProvider();
   }).catch(e => {
     console.error("[DI] Initialization failed:", e);
+  }).finally(() => {
+    isInitializing = false;
   });
 
   return { deps, ready: initPromise };
@@ -64,14 +73,9 @@ export function initializeDeps(): { deps: AppDependencies; ready: Promise<void> 
 export function getDeps(): AppDependencies {
   if (!deps) {
     // Lazy bootstrap — allows stores to be safe even if imported before _layout
-    deps = {
-      storage,
-      webViewBridge,
-      sessionManager,
-      getProvider,
-    };
+    initializeDeps();
   }
-  return deps;
+  return deps!;
 }
 
 /**

@@ -2,6 +2,10 @@
 description: Review code for bugs and correctness
 ---
 
+## Usage
+@[/review]
+
+## Steps
 1. Analyze code changes.
 2. Detect:
    - logic errors

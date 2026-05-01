@@ -6,7 +6,6 @@ import { CacheRepo } from "../../domain/repositories/cacheRepo";
 import { logger } from "../../utils/logger";
 
 const cache = CacheRepo.getInstance(getDeps().storage);
-const sessionManager = getDeps().sessionManager;
 
 const serverKey = (slug: string, number: string) => `ep_${slug}_${number}`;
 const streamKey = (url: string) => `stream_${url}`;
@@ -99,9 +98,4 @@ export async function clearPlayerCache(): Promise<void> {
     cache.clearWithPrefix("ep_"),
     cache.clearWithPrefix("stream_"),
   ]);
-}
-
-export async function clearAllCache(): Promise<void> {
-  await cache.clearAll();
-  await sessionManager.initialize();
 }

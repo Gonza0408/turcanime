@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { Theme } from "@/constants/Theme";
-import { clearAllCache } from "@/lib/application/services/playerService";
+import { clearAllCache } from "@/lib/application/services/cacheService";
 import { useUserStore } from "@/lib/store/userStore";
 import { Feather } from "@expo/vector-icons";
 import React from "react";

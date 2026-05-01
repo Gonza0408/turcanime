@@ -35,7 +35,7 @@ function AnimeDetailsContent() {
     setIsExpanded,
     selectedEpisode,
     setSelectedEpisode,
-    hasLoadedRef,
+    hasLoaded,
     activeRangeIdx,
     setActiveRangeIdx,
     isRestoring,
@@ -43,7 +43,7 @@ function AnimeDetailsContent() {
     visibleEpisodes,
     isAscending,
     handleEpisodePress,
-    handleRefresh,
+    refresh,
     resolveStream,
   } = useAnimeDetailScreen(slug as string);
 
@@ -65,7 +65,7 @@ function AnimeDetailsContent() {
           </ThemedText>
           <AnimatedPressable
             style={styles.retryButton}
-            onPress={handleRefresh}
+            onPress={refresh}
           >
             <Feather name="refresh-cw" size={16} color={Theme.colors.primary} />
             <ThemedText variant="caption" color="accent" style={styles.retryText}>
@@ -84,8 +84,8 @@ function AnimeDetailsContent() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={hasLoadedRef.current && isAnimeLoading}
-            onRefresh={handleRefresh}
+            refreshing={hasLoaded && isAnimeLoading}
+            onRefresh={refresh}
             tintColor={Theme.colors.primary}
           />
         }

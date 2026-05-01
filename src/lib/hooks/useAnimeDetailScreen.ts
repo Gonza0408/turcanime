@@ -1,28 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
 import { Episode } from "../domain/entities";
-import { useAnimeStore } from "../store/animeStore";
 import { usePlayerStore } from "../store/playerStore";
 import { useUserStore } from "../store/userStore";
-import { logger } from "../utils/logger";
+import { useAnimeData } from "./useAnimeData";
 import {
     useEpisodePagination,
     usePersistedRange,
     useServerFetcher,
 } from "./useAnimeDetail";
+import { useEpisodeUI } from "./useEpisodeUI";
 
 export function useAnimeDetailScreen(slug: string) {
-  const {
-    activeAnime: anime,
-    isDetailsLoading: isAnimeLoading,
-    fetchDetails,
-    error,
-  } = useAnimeStore();
+  const { anime, isLoading: isAnimeLoading, error, hasLoaded, refresh } = useAnimeData(slug);
   const { resolveStream, servers, fetchServers } = usePlayerStore();
   const { episodeOrder, setEpisodeOrder } = useUserStore();
-
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
-  const hasLoadedRef = useRef(false);
+  const episodeUI = useEpisodeUI();
 
   const [activeRangeIdx, setActiveRangeIdx, isRestoring] = usePersistedRange(slug);
   const { ranges, visibleEpisodes } = useEpisodePagination(
@@ -32,63 +24,38 @@ export function useAnimeDetailScreen(slug: string) {
   );
   const { serverLoading, fetchAndSet } = useServerFetcher(slug, fetchServers);
 
-  useEffect(() => {
-    let cancelled = false;
-    // Only fetch if we don't already have data for this slug
-    if (!anime || anime.url !== slug) {
-      fetchDetails(slug).then(() => {
-        if (!cancelled) {
-          // Details loaded successfully
-        }
-      }).catch((error) => {
-        logger.error("useAnimeDetailScreen", "Failed to fetch details", error);
-      });
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, [slug, fetchDetails, anime]);
-
-  useEffect(() => {
-    if (anime) hasLoadedRef.current = true;
-  }, [anime]);
-
   const handleEpisodePress = useCallback(
     (ep: Episode) => {
-      setSelectedEpisode(ep);
+      episodeUI.selectEpisode(ep);
       fetchAndSet(ep);
     },
-    [fetchAndSet],
+    [fetchAndSet, episodeUI],
   );
-
-  const handleRefresh = useCallback(() => {
-    fetchDetails(slug, true);
-  }, [slug, fetchDetails]);
 
   const isAscending = episodeOrder === "asc";
 
   return {
+    // Data
     anime,
     isAnimeLoading,
     error,
+    hasLoaded,
+    refresh,
+    // Player
     servers,
     serverLoading,
+    resolveStream,
+    // Episodes
     episodeOrder,
     setEpisodeOrder,
-    isExpanded,
-    setIsExpanded,
-    selectedEpisode,
-    setSelectedEpisode,
-    hasLoadedRef,
+    isAscending,
     activeRangeIdx,
     setActiveRangeIdx,
     isRestoring,
     ranges,
     visibleEpisodes,
-    isAscending,
     handleEpisodePress,
-    handleRefresh,
-    resolveStream,
-    fetchAndSet,
+    // UI
+    ...episodeUI,
   };
 }

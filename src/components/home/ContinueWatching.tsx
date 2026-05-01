@@ -5,6 +5,7 @@ import { Theme } from "../../constants/Theme";
 import { HistoryItem } from "../../lib/domain/entities";
 import { navigateToAnime } from "../../lib/utils/navigation";
 import { AnimatedPressable } from "../AnimatedPressable";
+import { SectionTitle } from "../ui/SectionTitle";
 import { ThemedText } from "../ui/ThemedText";
 
 interface ContinueWatchingProps {
@@ -42,9 +43,9 @@ export const ContinueWatching = memo(({ items }: ContinueWatchingProps) => {
 
   return (
     <View style={styles.sectionContainer}>
-      <ThemedText variant="h3" style={styles.sectionHeading}>
-        Continuar viendo
-      </ThemedText>
+      <View style={styles.titleWrapper}>
+        <SectionTitle>Continuar viendo</SectionTitle>
+      </View>
       <FlatList
         horizontal
         data={items}
@@ -68,11 +69,7 @@ export const ContinueWatching = memo(({ items }: ContinueWatchingProps) => {
 
 const styles = StyleSheet.create({
   sectionContainer: { marginTop: Theme.spacing.xl },
-  sectionHeading: {
-    paddingHorizontal: Theme.edge.horizontal,
-    marginBottom: Theme.spacing.sm,
-    fontWeight: Theme.fontWeight.bold as "700",
-  },
+  titleWrapper: { paddingHorizontal: Theme.edge.horizontal },
   sectionPadding: { paddingHorizontal: Theme.edge.horizontal },
   card: {
     width: Theme.dimensions.cardPosterMd.width,
@@ -101,8 +98,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   title: {
-    fontSize: Theme.fontSize.s,
-    fontWeight: Theme.fontWeight.semibold,
+    fontSize: Theme.fontSize.m,
+    fontWeight: Theme.fontWeight.bold as "700",
   },
 });
 

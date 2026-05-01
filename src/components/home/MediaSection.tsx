@@ -3,7 +3,7 @@ import { FlatList, StyleSheet, useWindowDimensions, View } from "react-native";
 import { Theme } from "../../constants/Theme";
 import { Anime, HistoryItem } from "../../lib/domain/entities";
 import AnimeCard from "../AnimeCard";
-import { ThemedText } from "../ui/ThemedText";
+import { SectionTitle } from "../ui/SectionTitle";
 
 interface MediaSectionProps<T extends Anime | HistoryItem> {
   label: string;
@@ -24,9 +24,9 @@ export const MediaSection = memo(<T extends Anime | HistoryItem>({ label, items,
 
   return (
     <View style={styles.sectionContainer}>
-      <ThemedText variant="h3" style={styles.sectionHeading}>
-        {label}
-      </ThemedText>
+      <View style={styles.titleWrapper}>
+        <SectionTitle>{label}</SectionTitle>
+      </View>
       <FlatList
         horizontal
         data={items}
@@ -68,11 +68,7 @@ export const MediaSection = memo(<T extends Anime | HistoryItem>({ label, items,
 
 const styles = StyleSheet.create({
   sectionContainer: { marginTop: Theme.spacing.xl },
-  sectionHeading: {
-    paddingHorizontal: Theme.edge.horizontal,
-    marginBottom: Theme.spacing.sm,
-    fontWeight: Theme.fontWeight.bold,
-  },
+  titleWrapper: { paddingHorizontal: Theme.edge.horizontal },
   sectionPadding: { paddingHorizontal: Theme.edge.horizontal },
 });
 

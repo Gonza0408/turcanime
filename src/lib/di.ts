@@ -6,7 +6,7 @@
  * infrastructure modules directly, enabling testability via mock injection.
  */
 import { sessionManager, storage, webViewBridge } from "./core/infrastructure";
-import { getProvider, initProviderForMode } from "./core/providerRegistry";
+import { getProvider, initProvider } from "./core/providerRegistry";
 import { ISessionManager, IStorage, IWebViewBridge } from "./domain/interfaces";
 import { CacheRepo } from "./domain/repositories/cacheRepo";
 import { logger } from "./utils/logger";
@@ -47,8 +47,7 @@ export function initializeDeps(): { deps: AppDependencies; ready: Promise<void> 
     // Initialize CacheRepo singleton before creating providers
     CacheRepo.getInstance(storage);
     await sessionManager.initialize();
-    initProviderForMode("safe");
-    await initProviderForMode("unsafe");
+    initProvider();
   }).catch(e => {
     console.error("[DI] Initialization failed:", e);
   });

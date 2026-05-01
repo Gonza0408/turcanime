@@ -4,8 +4,8 @@ import { Theme } from "../../constants/Theme";
 
 interface ThemedViewProps extends ViewProps {
   variant?: "background" | "surface" | "border";
-  padding?: keyof typeof Theme.space;
-  margin?: keyof typeof Theme.space;
+  padding?: keyof typeof Theme.spacing;
+  margin?: keyof typeof Theme.spacing;
   radius?: keyof typeof Theme.radius;
   border?: boolean;
 }
@@ -25,8 +25,8 @@ export const ThemedView = ({
     backgroundColor,
   };
 
-  if (padding) customStyles.padding = Theme.space[padding];
-  if (margin) customStyles.margin = Theme.space[margin];
+  if (padding) customStyles.padding = Theme.spacing[padding as keyof typeof Theme.spacing];
+  if (margin) customStyles.margin = Theme.spacing[margin as keyof typeof Theme.spacing];
   if (radius) customStyles.borderRadius = Theme.radius[radius];
 
   if (border || variant === "border") {

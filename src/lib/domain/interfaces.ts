@@ -23,6 +23,7 @@ export interface ISession {
 }
 
 export interface ISessionManager {
+  initialize(): Promise<void>;
   getSession(): Promise<ISession | null>;
   setSession(session: ISession): Promise<void>;
   refreshCookies(): Promise<void>;

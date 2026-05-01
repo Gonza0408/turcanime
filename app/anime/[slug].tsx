@@ -94,7 +94,6 @@ function AnimeDetailsContent() {
           anime={anime}
           isExpanded={isExpanded}
           setIsExpanded={setIsExpanded}
-          status={anime?.status || "Finalizado"}
           isAscending={isAscending}
           toggleSort={() => setEpisodeOrder(isAscending ? "desc" : "asc")}
           insets={insets}

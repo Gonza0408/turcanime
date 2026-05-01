@@ -14,7 +14,6 @@ interface AnimeDetailsHeaderProps {
   anime: AnimeDetail | null;
   isExpanded: boolean;
   setIsExpanded: (v: boolean) => void;
-  status: string;
   isAscending: boolean;
   toggleSort: () => void;
   insets: EdgeInsets;
@@ -25,7 +24,6 @@ export const AnimeDetailsHeader = memo(
     anime,
     isExpanded,
     setIsExpanded,
-    status,
     isAscending,
     toggleSort,
     insets,

@@ -113,7 +113,7 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
     const episodes = this.htmlParser.parseEpisodes(html, slug);
 
     const result: AnimeDetail = {
-      title: this.cleanTitle(meta.title || ""),
+      title: cleanTitle(meta.title || ""),
       image: rscData.poster,
       synopsis,
       banner: meta.banner || rscData.poster,
@@ -192,10 +192,6 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
       this.metrics.record(result.strategyUsed, result.success);
     }
     return result.cards;
-  }
-
-  private cleanTitle(raw: string): string {
-    return raw.replace(/^Ver\s+/i, "").replace(/\s+Sub\s+.*$/i, "").trim();
   }
 
 }

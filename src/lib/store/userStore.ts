@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { getDeps } from "../di";
 import { HistoryItem } from "../domain/entities";
+import { logger } from "../utils/logger";
 
 // ─── Storage keys ──────────────────────────────────────────────────────
 const EPISODE_ORDER_KEY = "episode_order";
@@ -79,21 +80,34 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   addToHistory: async (item: HistoryItem) => {
     const newItem = { ...item, timestamp: Date.now() };
-    const updated = prependDedup(get().lastViewed, newItem, 50, "url");
+    const previous = get().lastViewed;
+    const updated = prependDedup(previous, newItem, 50, "url");
     set({
       lastViewed: updated,
       continueWatching: computeContinueWatching(updated),
     });
-    await getDeps().storage.set(historyKey, updated);
+    try {
+      await getDeps().storage.set(historyKey, updated);
+    } catch (error) {
+      // Rollback on storage failure
+      set({ lastViewed: previous, continueWatching: computeContinueWatching(previous) });
+      logger.error("userStore", "Failed to persist history, rolled back", error);
+    }
   },
 
   removeFromHistory: async (url: string) => {
-    const updated = removeBy(get().lastViewed, i => i.url !== url);
+    const previous = get().lastViewed;
+    const updated = removeBy(previous, i => i.url !== url);
     set({
       lastViewed: updated,
       continueWatching: computeContinueWatching(updated),
     });
-    await getDeps().storage.set(historyKey, updated);
+    try {
+      await getDeps().storage.set(historyKey, updated);
+    } catch (error) {
+      set({ lastViewed: previous, continueWatching: computeContinueWatching(previous) });
+      logger.error("userStore", "Failed to persist history removal, rolled back", error);
+    }
   },
 
   clearHistory: async () => {
@@ -102,15 +116,27 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   saveRecentSearch: async (term: string) => {
-    const updated = prependDedup(get().recentSearches, term, 10);
+    const previous = get().recentSearches;
+    const updated = prependDedup(previous, term, 10);
     set({ recentSearches: updated });
-    await getDeps().storage.set(searchesKey, updated);
+    try {
+      await getDeps().storage.set(searchesKey, updated);
+    } catch (error) {
+      set({ recentSearches: previous });
+      logger.error("userStore", "Failed to persist search, rolled back", error);
+    }
   },
 
   removeRecentSearch: async (term: string) => {
-    const updated = removeBy(get().recentSearches, t => t !== term);
+    const previous = get().recentSearches;
+    const updated = removeBy(previous, t => t !== term);
     set({ recentSearches: updated });
-    await getDeps().storage.set(searchesKey, updated);
+    try {
+      await getDeps().storage.set(searchesKey, updated);
+    } catch (error) {
+      set({ recentSearches: previous });
+      logger.error("userStore", "Failed to persist search removal, rolled back", error);
+    }
   },
 
   clearRecentSearches: async () => {
@@ -124,8 +150,14 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   setEpisodeOrder: async (order: "asc" | "desc") => {
+    const previous = get().episodeOrder;
     set({ episodeOrder: order });
-    await getDeps().storage.set(EPISODE_ORDER_KEY, order);
+    try {
+      await getDeps().storage.set(EPISODE_ORDER_KEY, order);
+    } catch (error) {
+      set({ episodeOrder: previous });
+      logger.error("userStore", "Failed to persist episode order, rolled back", error);
+    }
   },
 
   invalidateCache: () => {

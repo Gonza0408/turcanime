@@ -27,12 +27,21 @@ export const EpisodeRangeSelector = memo(({
 
   useEffect(() => {
     if (ranges.length > 0 && listRef.current && !isRestoring) {
+      // Validate index is within bounds to prevent scrollToIndex failures
+      const validIndex = Math.max(0, Math.min(activeRangeIdx, ranges.length - 1));
+      if (validIndex !== activeRangeIdx) {
+        return; // Don't scroll if index is invalid, let parent correct it
+      }
+
       const timer = setTimeout(() => {
-        listRef.current?.scrollToIndex({
-          index: activeRangeIdx,
-          animated: true,
-          viewPosition: 0.5,
-        });
+        // Double-check ref and bounds before scrolling
+        if (listRef.current && validIndex < ranges.length) {
+          listRef.current.scrollToIndex({
+            index: validIndex,
+            animated: true,
+            viewPosition: 0.5,
+          });
+        }
       }, 100);
       return () => clearTimeout(timer);
     }

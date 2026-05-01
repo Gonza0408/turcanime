@@ -60,8 +60,11 @@ class Logger {
 
     try {
       await this.storage.set(LOG_STORAGE_KEY, this.logs);
-    } catch {
-      // Silent fail - logging shouldn't break the app
+    } catch (error) {
+      // Silent fail in production, warn in development
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.warn('[Logger] Failed to persist logs:', error);
+      }
     }
   }
 

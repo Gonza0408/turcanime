@@ -57,9 +57,9 @@ export const AnimeEpisodeModal = ({
               <ThemedText variant="caption" color="muted">No hay servidor disponible</ThemedText>
             </View>
           ) : (
-            displayServers.map((server) => (
+            displayServers.map((server, index) => (
               <AnimatedPressable
-                key={server.url}
+                key={server.id || `server-${index}`}
                 style={styles.serverCard}
                 onPress={() => onServerSelect(server)}
               >

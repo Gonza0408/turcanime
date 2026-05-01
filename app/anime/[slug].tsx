@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   scrollContent: { paddingBottom: TAB_BAR_BOTTOM_OFFSET },
   episodeList: {
     paddingHorizontal: Theme.edge.horizontal,
-    marginTop: Theme.spacing.sm,
+    marginTop: Theme.spacing.md,
     gap: Theme.spacing.sm,
   },
   episodeCardInner: {

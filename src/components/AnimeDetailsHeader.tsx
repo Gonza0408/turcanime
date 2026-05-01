@@ -8,6 +8,7 @@ import { Theme } from "../constants/Theme";
 import { AnimeDetail } from "../lib/domain/entities";
 import { navigateBack } from "../lib/utils/navigation";
 import { AnimatedPressable } from "./AnimatedPressable";
+import { SectionTitle } from "./ui/SectionTitle";
 import { ThemedText } from "./ui/ThemedText";
 
 interface AnimeDetailsHeaderProps {
@@ -94,9 +95,7 @@ export const AnimeDetailsHeader = memo(
 
         {/* Synopsis */}
         <View style={styles.section}>
-          <ThemedText variant="label" style={styles.sectionLabel}>
-            Sinopsis
-          </ThemedText>
+          <SectionTitle>Sinopsis</SectionTitle>
           {hasSynopsis ? (
             <AnimatedPressable onPress={() => setIsExpanded(!isExpanded)}>
               <ThemedText
@@ -124,9 +123,7 @@ export const AnimeDetailsHeader = memo(
 
         {/* Episodes Header */}
         <View style={styles.episodesHeader}>
-          <ThemedText variant="label">
-            Episodios ({anime?.episodes?.length || 0})
-          </ThemedText>
+          <SectionTitle>Episodios ({anime?.episodes?.length || 0})</SectionTitle>
           <AnimatedPressable onPress={toggleSort}>
             <Feather
               name={isAscending ? "chevron-up" : "chevron-down"}
@@ -186,12 +183,8 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingHorizontal: Theme.edge.horizontal,
-    paddingTop: Theme.spacing.md,
+    paddingTop: Theme.spacing.xl,
     paddingBottom: Theme.spacing.xl,
-  },
-  sectionLabel: {
-    color: Theme.colors.text.dark,
-    marginBottom: Theme.spacing.md,
   },
   readMore: {
     marginTop: Theme.spacing.sm,
@@ -202,6 +195,5 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: Theme.edge.horizontal,
     paddingTop: Theme.spacing.md,
-    marginBottom: Theme.spacing.md,
   },
 });

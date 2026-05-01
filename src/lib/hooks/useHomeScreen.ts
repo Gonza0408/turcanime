@@ -16,10 +16,9 @@ const SECTION_LABELS = {
 
 function buildSections(
   homeData: { popular?: Anime[]; recent?: Anime[]; topViewed?: Anime[] },
+  heroSource: Anime | undefined,
   continueWatchingItems: HistoryItem[]
 ): SectionItem[] {
-  const heroSource = homeData.popular?.[0];
-
   return [
     ...(heroSource ? [{ type: "HERO" as const, data: heroSource }] : []),
     ...(continueWatchingItems.length > 0 ? [{ type: "CONTINUE" as const, items: continueWatchingItems }] : []),
@@ -31,12 +30,12 @@ function buildSections(
 
 export function useHomeScreen() {
   const { fetchHome, homeData, isHomeLoading, error } = useAnimeStore();
-  const { getContinueWatching, isInitialized } = useUserStore();
+  const { continueWatching, isInitialized } = useUserStore();
 
   const sections = useMemo(() => {
-    const continueWatchingItems = getContinueWatching();
-    return buildSections(homeData, continueWatchingItems);
-  }, [homeData, getContinueWatching])
+    const heroSource = homeData.popular?.[0];
+    return buildSections(homeData, heroSource, continueWatching);
+  }, [homeData, continueWatching]);
 
   const isLoading = isHomeLoading || !isInitialized;
 

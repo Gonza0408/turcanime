@@ -24,10 +24,20 @@ function removeBy<T>(list: T[], predicate: (item: T) => boolean): T[] {
   return list.filter(predicate);
 }
 
+/** Compute continue watching list from history - latest episode per anime, max 8 items */
+function computeContinueWatching(lastViewed: HistoryItem[]): HistoryItem[] {
+  const uniqueAnimes = new Map<string, HistoryItem>();
+  lastViewed.forEach(item => {
+    uniqueAnimes.set(item.url, item);
+  });
+  return Array.from(uniqueAnimes.values()).slice(0, 8);
+}
+
 // ─── State interface ───────────────────────────────────────────────────
 
 interface UserState {
   lastViewed: HistoryItem[];
+  continueWatching: HistoryItem[];
   recentSearches: string[];
   episodeOrder: "asc" | "desc";
   isInitialized: boolean;
@@ -41,11 +51,11 @@ interface UserState {
   clearRecentSearches: () => Promise<void>;
   clearAllData: () => Promise<void>;
   setEpisodeOrder: (order: "asc" | "desc") => Promise<void>;
-  getContinueWatching: () => HistoryItem[];
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
   lastViewed: [],
+  continueWatching: [],
   recentSearches: [],
   episodeOrder: "asc",
   isInitialized: false,
@@ -54,8 +64,10 @@ export const useUserStore = create<UserState>((set, get) => ({
     const history = await getDeps().storage.get<HistoryItem[]>(historyKey);
     const searches = await getDeps().storage.get<string[]>(searchesKey);
     const order = await getDeps().storage.get<"asc" | "desc">(EPISODE_ORDER_KEY);
+    const lastViewed = history || [];
     set({
-      lastViewed: history || [],
+      lastViewed,
+      continueWatching: computeContinueWatching(lastViewed),
       recentSearches: searches || [],
       episodeOrder: order || "asc",
       isInitialized: true,
@@ -65,18 +77,24 @@ export const useUserStore = create<UserState>((set, get) => ({
   addToHistory: async (item: HistoryItem) => {
     const newItem = { ...item, timestamp: Date.now() };
     const updated = prependDedup(get().lastViewed, newItem, 50, "url");
-    set({ lastViewed: updated });
+    set({
+      lastViewed: updated,
+      continueWatching: computeContinueWatching(updated),
+    });
     await getDeps().storage.set(historyKey, updated);
   },
 
   removeFromHistory: async (url: string) => {
     const updated = removeBy(get().lastViewed, i => i.url !== url);
-    set({ lastViewed: updated });
+    set({
+      lastViewed: updated,
+      continueWatching: computeContinueWatching(updated),
+    });
     await getDeps().storage.set(historyKey, updated);
   },
 
   clearHistory: async () => {
-    set({ lastViewed: [] });
+    set({ lastViewed: [], continueWatching: [] });
     await getDeps().storage.remove(historyKey);
   },
 
@@ -98,7 +116,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   clearAllData: async () => {
-    set({ lastViewed: [], recentSearches: [], episodeOrder: "asc" });
+    set({ lastViewed: [], continueWatching: [], recentSearches: [], episodeOrder: "asc" });
     await getDeps().storage.clear();
   },
 
@@ -107,15 +125,4 @@ export const useUserStore = create<UserState>((set, get) => ({
     await getDeps().storage.set(EPISODE_ORDER_KEY, order);
   },
 
-  getContinueWatching: () => {
-    const history = get().lastViewed;
-    const uniqueAnimes = new Map<string, HistoryItem>();
-
-    // We process from oldest to newest so the latest episode for each anime wins
-    history.forEach(item => {
-      uniqueAnimes.set(item.url, item);
-    });
-
-    return Array.from(uniqueAnimes.values()).slice(0, 8);
-  },
 }));

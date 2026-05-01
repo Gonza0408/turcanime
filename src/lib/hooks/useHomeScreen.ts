@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Anime, HistoryItem } from "../domain/entities";
 import { useAnimeStore } from "../store/animeStore";
 import { useUserStore } from "../store/userStore";
@@ -30,7 +30,13 @@ function buildSections(
 
 export function useHomeScreen() {
   const { fetchHome, homeData, isHomeLoading, error } = useAnimeStore();
-  const { continueWatching, isInitialized } = useUserStore();
+  const { continueWatching, isInitialized, cacheInvalidationTimestamp } = useUserStore();
+
+  useEffect(() => {
+    if (cacheInvalidationTimestamp > 0) {
+      fetchHome();
+    }
+  }, [cacheInvalidationTimestamp, fetchHome]);
 
   const sections = useMemo(() => {
     const heroSource = homeData.popular?.[0];

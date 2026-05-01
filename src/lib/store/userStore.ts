@@ -40,6 +40,7 @@ interface UserState {
   continueWatching: HistoryItem[];
   recentSearches: string[];
   episodeOrder: "asc" | "desc";
+  cacheInvalidationTimestamp: number;
   isInitialized: boolean;
 
   initialize: () => Promise<void>;
@@ -51,6 +52,7 @@ interface UserState {
   clearRecentSearches: () => Promise<void>;
   clearAllData: () => Promise<void>;
   setEpisodeOrder: (order: "asc" | "desc") => Promise<void>;
+  invalidateCache: () => void;
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -58,6 +60,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   continueWatching: [],
   recentSearches: [],
   episodeOrder: "asc",
+  cacheInvalidationTimestamp: 0,
   isInitialized: false,
 
   initialize: async () => {
@@ -123,6 +126,10 @@ export const useUserStore = create<UserState>((set, get) => ({
   setEpisodeOrder: async (order: "asc" | "desc") => {
     set({ episodeOrder: order });
     await getDeps().storage.set(EPISODE_ORDER_KEY, order);
+  },
+
+  invalidateCache: () => {
+    set({ cacheInvalidationTimestamp: Date.now() });
   },
 
 }));

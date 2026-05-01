@@ -4,7 +4,7 @@ import { Theme } from "@/constants/Theme";
 import { clearAllCache } from "@/lib/application/services/playerService";
 import { useUserStore } from "@/lib/store/userStore";
 import { Feather } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React from "react";
 import {
   Alert,
   ScrollView,
@@ -16,8 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Settings() {
   const insets = useSafeAreaInsets();
-  const { clearHistory } = useUserStore();
-  const [cacheCleared, setCacheCleared] = useState(false);
+  const { clearHistory, invalidateCache } = useUserStore();
 
   const handleClearCache = () => {
     Alert.alert(
@@ -30,8 +29,7 @@ export default function Settings() {
           style: "destructive",
           onPress: async () => {
             await clearAllCache();
-            setCacheCleared(true);
-            setTimeout(() => setCacheCleared(false), 2000);
+            invalidateCache();
           },
         },
       ]
@@ -75,7 +73,6 @@ export default function Settings() {
               icon="trash-2"
               iconColor="#FF3B30"
               title="Limpiar caché"
-              subtitle={cacheCleared ? "✓ Caché limpiado" : undefined}
               onPress={handleClearCache}
             />
             <View style={styles.separator} />

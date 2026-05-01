@@ -78,7 +78,7 @@ const AnimeCard = ({ anime, width, onPress, variant = "default", episodeNumber }
           </View>
         )}
        </ThemedView>
-      <ThemedText variant="caption" style={styles.title} numberOfLines={2}>
+      <ThemedText style={styles.title} numberOfLines={2}>
         {anime.title}
       </ThemedText>
     </AnimatedPressable>
@@ -93,7 +93,8 @@ const styles = StyleSheet.create({
   },
   title: {
     marginTop: Theme.spacing.sm,
-    lineHeight: Theme.lineHeight.s,
+    fontSize: Theme.fontSize.m,
+    fontWeight: Theme.fontWeight.medium as "500",
   },
   subtitle: {
     marginTop: Theme.spacing.xs,

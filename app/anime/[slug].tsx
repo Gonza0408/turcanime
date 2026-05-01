@@ -10,7 +10,7 @@ import { ThemedView } from "@/components/ui/ThemedView";
 import { TAB_BAR_BOTTOM_OFFSET } from "@/constants/layout";
 import { Theme } from "@/constants/Theme";
 import { useAnimeDetailScreen } from "@/lib/hooks/useAnimeDetailScreen";
-import { navigateToPlayer } from "@/lib/utils/navigation";
+import { navigateBack, navigateToPlayer } from "@/lib/utils/navigation";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
@@ -84,6 +84,7 @@ function AnimeDetailsContent() {
           isAscending={isAscending}
           toggleSort={() => setEpisodeOrder(isAscending ? "desc" : "asc")}
           insets={insets}
+          onBackPress={navigateBack}
         />
 
         {/* Episode Range Selector - above episode list */}

@@ -1,13 +1,12 @@
-import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { memo, useState } from "react";
-import { StyleSheet, useWindowDimensions, View } from "react-native";
+import React, { memo } from "react";
+import { StyleSheet, useWindowDimensions } from "react-native";
 import { Theme } from "../../constants/Theme";
 import { Anime } from "../../lib/domain/entities";
 import { navigateToAnime } from "../../lib/utils/navigation";
 import { AnimatedPressable } from "../AnimatedPressable";
+import { ImageWithLoader } from "../ui/ImageWithLoader";
 import { ThemedText } from "../ui/ThemedText";
-import { ThemedView } from "../ui/ThemedView";
 
 interface HomeHeroProps {
   featured: Anime | undefined;
@@ -15,9 +14,7 @@ interface HomeHeroProps {
 
 export const HomeHero = memo(({ featured }: HomeHeroProps) => {
   const { width } = useWindowDimensions();
-  const HERO_HEIGHT = width * 0.62;
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const HERO_HEIGHT = width * Theme.dimensions.ratios.hero;
 
   if (!featured) return null;
   const viewFeatured = () => navigateToAnime(featured.url);
@@ -27,34 +24,12 @@ export const HomeHero = memo(({ featured }: HomeHeroProps) => {
       style={[styles.hero, { height: HERO_HEIGHT }]}
       onPress={viewFeatured}
     >
-      <ThemedView
-        variant="surface"
+      <ImageWithLoader
+        uri={featured.image}
         style={StyleSheet.absoluteFill}
-      >
-        {!imageLoaded && !imageError && (
-          <View style={styles.loadingPlaceholder}>
-            <ThemedText variant="caption" color="muted">Cargando...</ThemedText>
-          </View>
-        )}
-        {imageError ? (
-          <View style={styles.errorPlaceholder}>
-            <ThemedText variant="caption" color="muted">Error</ThemedText>
-          </View>
-        ) : (
-          <Image
-            key={featured.image}
-            source={{ uri: featured.image }}
-            style={styles.image}
-            contentFit="cover"
-            cachePolicy="memory-disk"
-            transition={200}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-        )}
-      </ThemedView>
+      />
       <LinearGradient
-        colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.98)']}
+        colors={Theme.colors.overlay.homeHero}
         locations={[0.05, 0.4, 0.75, 1]}
         style={styles.overlay}
       >
@@ -72,11 +47,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: Theme.spacing.xl,
   },
-  image: {
-    ...StyleSheet.absoluteFillObject,
-    width: "100%",
-    height: "100%",
-  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "flex-end",
@@ -85,16 +55,6 @@ const styles = StyleSheet.create({
   },
   title: {
     color: Theme.colors.text.primary,
-  },
-  loadingPlaceholder: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorPlaceholder: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 

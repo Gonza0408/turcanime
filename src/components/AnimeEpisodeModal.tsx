@@ -95,9 +95,9 @@ const styles = StyleSheet.create({
     paddingBottom: Theme.spacing.xxl + Theme.spacing.xl,
   },
   handle: {
-    width: Theme.dimensions.modalHandle.width,
-    height: Theme.dimensions.modalHandle.height,
-    borderRadius: Theme.dimensions.modalHandle.radius,
+    width: Theme.dimensions.modal.handle.width,
+    height: Theme.dimensions.modal.handle.height,
+    borderRadius: Theme.dimensions.modal.handle.radius,
     backgroundColor: Theme.colors.border,
     alignSelf: "center",
     marginBottom: Theme.spacing.sm,
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
     borderRadius: Theme.radius.m,
   },
   playIcon: {
-    width: Theme.dimensions.playIcon.width,
-    height: Theme.dimensions.playIcon.height,
+    width: Theme.dimensions.player.playIcon.width,
+    height: Theme.dimensions.player.playIcon.height,
     borderRadius: Theme.radius.s,
     backgroundColor: Theme.colors.primaryMuted,
     justifyContent: "center",
@@ -129,5 +129,5 @@ const styles = StyleSheet.create({
   langText: {
     flex: 1,
   },
-  loaderArea: { height: Theme.dimensions.loaderHeight, justifyContent: "center", alignItems: "center" },
+  loaderArea: { height: Theme.dimensions.layout.loaderHeight, justifyContent: "center", alignItems: "center" },
 });

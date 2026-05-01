@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
     borderBottomColor: Theme.colors.border,
   },
   posterWrap: {
-    width: Theme.dimensions.cardPosterSm.width,
-    height: Theme.dimensions.cardPosterSm.height,
+    width: Theme.dimensions.poster.sm.width,
+    height: Theme.dimensions.poster.sm.height,
     borderRadius: Theme.radius.s,
     overflow: "hidden",
     backgroundColor: Theme.colors.surface,

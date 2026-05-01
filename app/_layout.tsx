@@ -1,9 +1,8 @@
 import { NetworkBanner } from "@/components/NetworkBanner";
 import { Theme } from "@/constants/Theme";
-import { initializeDeps } from "@/lib/di";
+import { AppInitializationService } from "@/lib/application/services/AppInitializationService";
 import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
 import { WebViewWorker } from "@/lib/infrastructure/components/WebViewWorker";
-import { useUserStore } from "@/lib/store/userStore";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -13,26 +12,24 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 function RootInner() {
   const [ready, setReady] = useState(false);
   const { isInternetReachable } = useNetworkStatus();
+  const appInitService = AppInitializationService.getInstance();
 
   useEffect(() => {
     let cancelled = false;
 
-    // Initialize DI + provider, then user store
-    const { ready: diReady } = initializeDeps();
-
-    diReady.then(() => {
-      return useUserStore.getState().initialize();
-    }).then(() => {
-      if (!cancelled) setReady(true);
-    }).catch((error) => {
-      console.error('[RootLayout] Initialization failed:', error);
-      if (!cancelled) setReady(true); // Set ready even on error to show the app
-    });
+    appInitService.initialize()
+      .then(() => {
+        if (!cancelled) setReady(true);
+      })
+      .catch((error) => {
+        console.error('[RootLayout] Initialization failed:', error);
+        if (!cancelled) setReady(true); // Set ready even on error to show the app
+      });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [appInitService]);
 
   if (!ready) {
     return (

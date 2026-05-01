@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   h1: {
     fontSize: Theme.fontSize.xxl,
     fontWeight: Theme.fontWeight.heavy,
-    letterSpacing: -0.5,
+    letterSpacing: Theme.letterSpacing.tight,
     lineHeight: Theme.lineHeight.xl,
   },
   h2: {
@@ -64,13 +64,13 @@ const styles = StyleSheet.create({
     fontSize: Theme.fontSize.s,
     fontWeight: Theme.fontWeight.heavy,
     textTransform: "uppercase",
-    letterSpacing: 1.5,
+    letterSpacing: Theme.letterSpacing.wider,
     lineHeight: Theme.lineHeight.s,
   },
   caption: {
     fontSize: Theme.fontSize.xs,
     fontWeight: Theme.fontWeight.semibold,
-    letterSpacing: 0.5,
+    letterSpacing: Theme.letterSpacing.wide,
     lineHeight: Theme.lineHeight.xs,
   }
 });

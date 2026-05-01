@@ -67,7 +67,7 @@ export const ListRow = ({
         <AnimatedPressable style={styles.remove} onPress={onRemove}>
           <Feather
             name="x"
-            size={Theme.dimensions.iconSm}
+            size={Theme.dimensions.icon.sm}
             color={Theme.colors.text.muted}
           />
         </AnimatedPressable>
@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   posterWrap: {
-    width: Theme.dimensions.cardPosterSm.width,
-    height: Theme.dimensions.cardPosterSm.height,
+    width: Theme.dimensions.poster.sm.width,
+    height: Theme.dimensions.poster.sm.height,
     borderRadius: Theme.radius.s,
     overflow: "hidden",
     backgroundColor: Theme.colors.surface,

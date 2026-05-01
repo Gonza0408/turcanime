@@ -1,35 +1,29 @@
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Theme } from "@/constants/Theme";
+import { NavigationService } from "@/lib/application/services/NavigationService";
+import { PlayerUIService } from "@/lib/application/services/PlayerUIService";
 import { usePlayerStore } from "@/lib/store/playerStore";
 import { useUserStore } from "@/lib/store/userStore";
-import { logger } from "@/lib/utils/logger";
-import * as NavigationBar from "expo-navigation-bar";
 import { useLocalSearchParams } from "expo-router";
-import * as ScreenOrientation from "expo-screen-orientation";
 import { StatusBar } from "expo-status-bar";
 import { useVideoPlayer, VideoView } from "expo-video";
-import React, { useEffect } from "react";
-import { ActivityIndicator, StatusBar as RNStatusBar, StyleSheet, View } from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 function PlayerContent() {
   const { slug, number, title: pTitle, img: pImg } = useLocalSearchParams();
   const { streamUrl, streamHeaders, reset: clearStream } = usePlayerStore();
   const { addToHistory } = useUserStore();
 
+  const playerService = useMemo(() => new PlayerUIService(), []);
+  const navigationService = useMemo(() => NavigationService.getInstance(), []);
+
   // Immersive orientation
   useEffect(() => {
-    RNStatusBar.setHidden(true, "fade");
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-    NavigationBar.setVisibilityAsync("hidden").catch((error) => {
-      logger.warn("player", "NavigationBar.setVisibilityAsync failed (expected on some platforms)", error);
-    });
+    playerService.setupImmersiveMode();
 
     return () => {
-      RNStatusBar.setHidden(false, "fade");
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-      NavigationBar.setVisibilityAsync("visible").catch((error) => {
-        logger.warn("player", "NavigationBar.setVisibilityAsync failed (expected on some platforms)", error);
-      });
+      playerService.cleanupImmersiveMode();
       clearStream();
     };
   }, [clearStream]);
@@ -37,15 +31,14 @@ function PlayerContent() {
   // Save to history
   useEffect(() => {
     if (streamUrl && pTitle && pImg) {
-      addToHistory({
+      navigationService.saveToHistory({
         title: pTitle as string,
         image: pImg as string,
         url: slug as string,
         number: number as string,
-        timestamp: Date.now()
       });
     }
-  }, [streamUrl, pTitle, pImg, slug, number, addToHistory]);
+  }, [streamUrl, pTitle, pImg, slug, number]);
 
   // Video player - initialized directly with URL
   const videoSource = streamUrl

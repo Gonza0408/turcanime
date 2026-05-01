@@ -7,13 +7,13 @@ import { ThemedView } from "@/components/ui/ThemedView";
 import { TAB_BAR_BOTTOM_OFFSET } from "@/constants/layout";
 import { Theme } from "@/constants/Theme";
 import { SectionItem, useHomeScreen } from "@/lib/hooks/useHomeScreen";
-import { useTabBarVisibility } from "@/lib/hooks/useTabBarVisibility";
+import { useTabBarManager } from "@/lib/hooks/useTabBarManager";
 import React, { useEffect } from "react";
 import { FlatList, RefreshControl, StyleSheet } from "react-native";
 
 export default function Home() {
   const { sections, isLoading, error, fetchHome, hasContent } = useHomeScreen();
-  const { handleScroll, reset } = useTabBarVisibility({ threshold: 8 });
+  const { handleScroll, reset } = useTabBarManager({ threshold: 8 });
 
   useEffect(() => {
     fetchHome();

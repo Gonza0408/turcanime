@@ -15,7 +15,7 @@ interface ContinueWatchingProps {
 export const ContinueWatching = memo(({ items }: ContinueWatchingProps) => {
   if (!items || items.length === 0) return null;
 
-  const cardWidth = Theme.dimensions.cardPosterMd.width;
+  const cardWidth = Theme.dimensions.poster.md.width;
   const gap = Theme.spacing.md;
 
   const renderItem = ({ item }: { item: HistoryItem }) => (
@@ -53,6 +53,7 @@ export const ContinueWatching = memo(({ items }: ContinueWatchingProps) => {
         renderItem={renderItem}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.sectionPadding}
+        // Performance optimizations
         removeClippedSubviews={true}
         maxToRenderPerBatch={5}
         initialNumToRender={3}
@@ -72,8 +73,8 @@ const styles = StyleSheet.create({
   titleWrapper: { paddingHorizontal: Theme.edge.horizontal },
   sectionPadding: { paddingHorizontal: Theme.edge.horizontal },
   card: {
-    width: Theme.dimensions.cardPosterMd.width,
-    height: Theme.dimensions.cardPosterMd.height,
+    width: Theme.dimensions.poster.md.width,
+    height: Theme.dimensions.poster.md.height,
     marginRight: Theme.spacing.md,
     borderRadius: Theme.radius.l,
     overflow: "hidden",

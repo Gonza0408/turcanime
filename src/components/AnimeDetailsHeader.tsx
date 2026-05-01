@@ -6,7 +6,6 @@ import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { EdgeInsets } from "react-native-safe-area-context";
 import { Theme } from "../constants/Theme";
 import { AnimeDetail } from "../lib/domain/entities";
-import { navigateBack } from "../lib/utils/navigation";
 import { AnimatedPressable } from "./AnimatedPressable";
 import { SectionTitle } from "./ui/SectionTitle";
 import { ThemedText } from "./ui/ThemedText";
@@ -18,6 +17,7 @@ interface AnimeDetailsHeaderProps {
   isAscending: boolean;
   toggleSort: () => void;
   insets: EdgeInsets;
+  onBackPress?: () => void;
 }
 
 export const AnimeDetailsHeader = memo(
@@ -28,6 +28,7 @@ export const AnimeDetailsHeader = memo(
     isAscending,
     toggleSort,
     insets,
+    onBackPress,
   }: AnimeDetailsHeaderProps) => {
     const { width: windowWidth, height: windowHeight } = useWindowDimensions();
     const hasSynopsis = anime?.synopsis && anime.synopsis.length > 0;
@@ -49,12 +50,12 @@ export const AnimeDetailsHeader = memo(
             cachePolicy="memory-disk"
           />
           <LinearGradient
-            colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.98)']}
+            colors={Theme.colors.overlay.detailsHero}
             locations={[0.05, 0.35, 0.7, 1]}
             style={[styles.overlay, { paddingTop: insets.top }]}>
             {/* Back Button */}
             <AnimatedPressable
-              onPress={navigateBack}
+              onPress={onBackPress}
               style={[styles.backButton, { marginTop: insets.top }]}
             >
               <Feather
@@ -157,8 +158,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: Theme.edge.horizontal,
-    width: Theme.dimensions.backButton,
-    height: Theme.dimensions.backButton,
+    width: Theme.dimensions.layout.backButton,
+    height: Theme.dimensions.layout.backButton,
     borderRadius: Theme.radius.full,
     backgroundColor: Theme.colors.overlay.dark,
     justifyContent: "center",

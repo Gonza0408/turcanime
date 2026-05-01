@@ -25,11 +25,11 @@ export const RecentSearches = memo(({ searches, onSelect, onRemove }: RecentSear
         renderItem={({ item }) => (
           <AnimatedPressable style={styles.row} onPress={() => onSelect(item)}>
             <View style={styles.left}>
-              <Feather name="clock" size={Theme.dimensions.iconSm} color={Theme.colors.primary} />
+              <Feather name="clock" size={Theme.dimensions.icon.sm} color={Theme.colors.primary} />
               <ThemedText style={styles.text}>{item}</ThemedText>
             </View>
             <AnimatedPressable style={styles.remove} onPress={(e) => { e.stopPropagation(); onRemove(item); }}>
-              <Feather name="x" size={Theme.dimensions.iconSm} color={Theme.colors.text.muted} />
+              <Feather name="x" size={Theme.dimensions.icon.sm} color={Theme.colors.text.muted} />
             </AnimatedPressable>
           </AnimatedPressable>
         )}

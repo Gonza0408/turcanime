@@ -1,12 +1,11 @@
-import { Image } from "expo-image";
-import React, { memo, useState } from "react";
+import React, { memo } from "react";
 import { StyleSheet, View } from "react-native";
 import { Theme } from "../constants/Theme";
 import { Anime, HistoryItem } from "../lib/domain/entities";
 import { navigateToAnime } from "../lib/utils/navigation";
 import { AnimatedPressable } from "./AnimatedPressable";
+import { ImageWithLoader } from "./ui/ImageWithLoader";
 import { ThemedText } from "./ui/ThemedText";
-import { ThemedView } from "./ui/ThemedView";
 
 interface AnimeCardProps {
   anime: Anime | HistoryItem;
@@ -18,17 +17,13 @@ interface AnimeCardProps {
 
 const AnimeCard = ({ anime, width, onPress, variant = "default", episodeNumber }: AnimeCardProps) => {
   const isContinue = variant === "continue";
-  const cardHeight = isContinue ? width * 0.6 : width * 1.5;
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const cardHeight = isContinue ? width * Theme.dimensions.ratios.continue : width * Theme.dimensions.ratios.default;
 
   const handlePress = () => {
-    if (!imageError) {
-      if (onPress) {
-        onPress();
-      } else {
-        navigateToAnime(anime.url);
-      }
+    if (onPress) {
+      onPress();
+    } else {
+      navigateToAnime(anime.url);
     }
   };
 
@@ -40,35 +35,14 @@ const AnimeCard = ({ anime, width, onPress, variant = "default", episodeNumber }
       accessibilityHint="Presiona para ver detalles"
       hapticFeedback={true}
     >
-       <ThemedView
-         variant="surface"
-         radius="l"
-         style={[
-           styles.poster,
-           { width, height: cardHeight },
-           !imageLoaded && !imageError && styles.imageLoading,
-           imageError && styles.imageError
-         ]}
-       >
-        {!imageLoaded && !imageError && (
-          <View style={styles.loadingPlaceholder}>
-            <ThemedText variant="caption" color="muted">Cargando...</ThemedText>
-          </View>
-        )}
-        {imageError ? (
-          <View style={styles.errorPlaceholder}>
-            <ThemedText variant="caption" color="muted">Error</ThemedText>
-          </View>
-        ) : (
-          <Image
-            source={{ uri: anime.image }}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-            cachePolicy="memory-disk"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-        )}
+      <View style={styles.imageContainer}>
+        <ImageWithLoader
+          uri={anime.image}
+          style={[
+            styles.poster,
+            { width, height: cardHeight } as any
+          ]}
+        />
         {/* Badge de episodio para modo continue */}
         {isContinue && episodeNumber && (
           <View style={styles.episodeBadge}>
@@ -77,7 +51,7 @@ const AnimeCard = ({ anime, width, onPress, variant = "default", episodeNumber }
             </ThemedText>
           </View>
         )}
-       </ThemedView>
+      </View>
       <ThemedText style={styles.title} numberOfLines={2}>
         {anime.title}
       </ThemedText>
@@ -86,6 +60,9 @@ const AnimeCard = ({ anime, width, onPress, variant = "default", episodeNumber }
 };
 
 const styles = StyleSheet.create({
+  imageContainer: {
+    position: 'relative',
+  },
   poster: {
     borderRadius: Theme.radius.l,
     overflow: "hidden",
@@ -99,22 +76,6 @@ const styles = StyleSheet.create({
   subtitle: {
     marginTop: Theme.spacing.xs,
     lineHeight: Theme.lineHeight.xs,
-  },
-  imageLoading: {
-    backgroundColor: Theme.colors.surface,
-  },
-  imageError: {
-    backgroundColor: Theme.colors.border,
-  },
-  loadingPlaceholder: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorPlaceholder: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   episodeBadge: {
     position: 'absolute',

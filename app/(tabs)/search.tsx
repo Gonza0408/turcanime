@@ -5,14 +5,15 @@ import { AppLoader } from "@/components/ui/AppLoader";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import {
+    GridConfig,
     searchGridCardWidth,
     TAB_BAR_BOTTOM_OFFSET,
 } from "@/constants/layout";
 import { Theme } from "@/constants/Theme";
+import { NavigationService } from "@/lib/application/services/NavigationService";
 import { Anime } from "@/lib/domain/entities";
 import { useSearchScreen } from "@/lib/hooks/useSearchScreen";
-import { useTabBarVisibility } from "@/lib/hooks/useTabBarVisibility";
-import { useUIStore } from "@/lib/store/uiStore";
+import { useTabBarManager } from "@/lib/hooks/useTabBarManager";
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect } from "react";
 import {
@@ -41,17 +42,17 @@ export default function SearchScreen() {
 
   const insets = useSafeAreaInsets();
   const cardWidth = searchGridCardWidth();
-  const setTabBarVisible = useUIStore((state) => state.setTabBarVisible);
+  const navigationService = NavigationService.getInstance();
 
-  const { handleScroll, reset } = useTabBarVisibility({ threshold: 8 });
+  const { handleScroll, reset } = useTabBarManager({ threshold: 8 });
 
   // Reset scroll and show tabbar when search ends
   useEffect(() => {
     if (!isSearched) {
       reset();
-      setTabBarVisible(true);
+      navigationService.resetTabBar();
     }
-  }, [isSearched, reset, setTabBarVisible]);
+  }, [isSearched, reset, navigationService]);
 
   return (
     <ThemedView style={styles.root}>
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    height: Theme.dimensions.inputHeight,
+    height: Theme.dimensions.input.height,
     backgroundColor: Theme.colors.surface,
     borderRadius: Theme.radius.m,
     paddingHorizontal: Theme.spacing.lg,
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.text.primary,
     fontSize: Theme.fontSize.m,
     fontWeight: Theme.fontWeight.medium as "500",
-    height: Theme.dimensions.inputHeight,
+    height: Theme.dimensions.input.height,
   },
   centeredContent: {
     flex: 1,
@@ -188,9 +189,9 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: "flex-start",
-    gap: Theme.screen.search.gridColumnGap,
+    gap: GridConfig.search.gaps.column,
   },
-  cardWrapper: { marginBottom: Theme.screen.search.gridRowGap },
+  cardWrapper: { marginBottom: GridConfig.search.gaps.row },
   emptyContainer: {
     flex: 1,
     justifyContent: "flex-start",

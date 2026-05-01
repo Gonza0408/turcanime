@@ -4,8 +4,8 @@ import { Theme } from "../constants/Theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 import { ThemedText } from "./ui/ThemedText";
 
-const RANGE_BADGE_WIDTH = Theme.dimensions.episodeRangeBadge.width;
-const RANGE_BADGE_GAP = Theme.dimensions.episodeRangeBadge.gap;
+const RANGE_BADGE_WIDTH = Theme.dimensions.layout.episodeRangeBadge.width;
+const RANGE_BADGE_GAP = Theme.dimensions.layout.episodeRangeBadge.gap;
 
 interface EpisodeRange {
   label: string;
@@ -97,12 +97,13 @@ const styles = StyleSheet.create({
     marginBottom: Theme.spacing.md,
   },
   scroll: {
-    gap: Theme.dimensions.episodeRangeBadge.gap,
+    gap: Theme.dimensions.layout.episodeRangeBadge.gap,
     paddingHorizontal: Theme.edge.horizontal,
   },
   badge: {
     backgroundColor: Theme.colors.surface,
-    width: Theme.dimensions.episodeRangeBadge.width,
+    gap: Theme.dimensions.layout.episodeRangeBadge.gap,
+    width: Theme.dimensions.layout.episodeRangeBadge.width,
     alignItems: "center",
     paddingVertical: Theme.spacing.sm,
     borderRadius: Theme.radius.m,

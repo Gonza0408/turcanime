@@ -3,14 +3,15 @@
  * Add new entries here when supporting new embed providers.
  */
 
-/** Map of embed domain substrings to their required Referer header. */
+/** Map of embed domain substrings to their required Referer header.
+ *  These are used by the player to set proper headers for video embeds.
+ */
 export const EMBED_REFERER: ReadonlyMap<string, string> = new Map([
   ["yourupload.com", "https://www.yourupload.com/"],
   ["voe.sx", "https://voe.sx/"],
   ["hqq.tv", "https://hqq.tv/"],
   ["vgfplay.com", "https://vgfplay.com/"],
   ["vidguard", "https://vgfplay.com/"],
-  ["mega.nz", "https://mega.nz/"],
   ["vidcache.net", "https://www.yourupload.com/"],
 ]);
 

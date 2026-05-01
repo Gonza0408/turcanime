@@ -2,6 +2,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Theme } from "@/constants/Theme";
 import { usePlayerStore } from "@/lib/store/playerStore";
 import { useUserStore } from "@/lib/store/userStore";
+import { logger } from "@/lib/utils/logger";
 import * as NavigationBar from "expo-navigation-bar";
 import { useLocalSearchParams } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
@@ -19,15 +20,15 @@ function PlayerContent() {
   useEffect(() => {
     RNStatusBar.setHidden(true, "fade");
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-    NavigationBar.setVisibilityAsync("hidden").catch(() => {
-      // Silently fail on platforms where navigation bar is not available
+    NavigationBar.setVisibilityAsync("hidden").catch((error) => {
+      logger.warn("player", "NavigationBar.setVisibilityAsync failed (expected on some platforms)", error);
     });
 
     return () => {
       RNStatusBar.setHidden(false, "fade");
       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-      NavigationBar.setVisibilityAsync("visible").catch(() => {
-        // Silently fail on platforms where navigation bar is not available
+      NavigationBar.setVisibilityAsync("visible").catch((error) => {
+        logger.warn("player", "NavigationBar.setVisibilityAsync failed (expected on some platforms)", error);
       });
       clearStream();
     };

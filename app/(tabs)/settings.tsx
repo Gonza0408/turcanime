@@ -4,7 +4,7 @@ import { Theme } from "@/constants/Theme";
 import { clearPlayerCache } from "@/lib/application/services/playerService";
 import { useUserStore } from "@/lib/store/userStore";
 import { Feather } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function Settings() {
   const insets = useSafeAreaInsets();
   const { clearHistory } = useUserStore();
+  const [cacheCleared, setCacheCleared] = useState(false);
 
   const handleClearCache = () => {
     Alert.alert(
@@ -29,6 +30,8 @@ export default function Settings() {
           style: "destructive",
           onPress: async () => {
             await clearPlayerCache();
+            setCacheCleared(true);
+            setTimeout(() => setCacheCleared(false), 2000);
           },
         },
       ]
@@ -72,6 +75,7 @@ export default function Settings() {
               icon="trash-2"
               iconColor="#FF3B30"
               title="Limpiar caché"
+              subtitle={cacheCleared ? "✓ Caché limpiado" : undefined}
               onPress={handleClearCache}
             />
             <View style={styles.separator} />
@@ -106,6 +110,7 @@ interface SettingItemProps {
   icon: keyof typeof Feather.glyphMap;
   iconColor: string;
   title: string;
+  subtitle?: string;
   value?: string;
   onPress?: () => void;
   showChevron?: boolean;
@@ -115,6 +120,7 @@ function SettingItem({
   icon,
   iconColor,
   title,
+  subtitle,
   value,
   onPress,
   showChevron,
@@ -131,6 +137,11 @@ function SettingItem({
       </View>
       <View style={styles.content}>
         <ThemedText variant="body">{title}</ThemedText>
+        {subtitle && (
+          <ThemedText variant="caption" color="muted">
+            {subtitle}
+          </ThemedText>
+        )}
       </View>
       {value && (
         <ThemedText variant="body" color="muted" style={styles.value}>

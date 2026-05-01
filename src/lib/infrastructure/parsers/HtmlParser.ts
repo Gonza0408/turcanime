@@ -7,9 +7,66 @@ export interface ParseResult {
   success: boolean;
 }
 
+interface CardStrategy {
+  name: string;
+  regex: RegExp;
+}
+
 export class HtmlParser {
-  private cleanTitle(raw: string): string {
-    return raw.replace(/^Ver\s+/i, "").replace(/\s+Sub\s+.*$/i, "").trim();
+  private sanitizeTitle(title: string): string {
+    return title.replace(/&amp;/g, "&").replace(/<[^>]*>/g, "").trim();
+  }
+
+  private extractCardsWithRegex(html: string, regex: RegExp, seen: Set<string>): Anime[] {
+    const cards: Anime[] = [];
+    let match;
+
+    while ((match = regex.exec(html)) !== null) {
+      const url = match[1];
+      if (seen.has(url)) continue;
+      seen.add(url);
+
+      cards.push({
+        title: cleanTitle(this.sanitizeTitle(match[3])),
+        image: match[2],
+        url: url,
+        status: "",
+      });
+    }
+
+    return cards;
+  }
+
+  private strategyContextSearch(html: string, seen: Set<string>): Anime[] {
+    const linkRegex = /href="\/anime\/([^"]+)"/g;
+    const links = [...html.matchAll(linkRegex)].map((m) => m[1]);
+    const uniqueLinks = [...new Set(links)];
+    const cards: Anime[] = [];
+
+    for (const url of uniqueLinks) {
+      if (seen.has(url)) continue;
+
+      const linkIndex = html.indexOf(`href="/anime/${url}"`);
+      if (linkIndex === -1) continue;
+
+      const context = html.substring(
+        Math.max(0, linkIndex - 500),
+        Math.min(html.length, linkIndex + 500)
+      );
+      const imgMatch = context.match(/(?:src|data-src)="([^"]+\.(?:jpg|jpeg|png|webp))"/i);
+
+      if (imgMatch) {
+        seen.add(url);
+        cards.push({
+          title: url.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+          image: imgMatch[1],
+          url: url,
+          status: "",
+        });
+      }
+    }
+
+    return cards;
   }
 
   parseCards(html: string): ParseResult {
@@ -19,105 +76,25 @@ export class HtmlParser {
     log("HtmlParser", `HTML length: ${html.length}, contains animeCard: ${html.includes("animeCard")}`);
     log("HtmlParser", `Contains /anime/ links: ${html.includes("/anime/")}`);
 
-    // Strategy 1: Primary - animeCard class with src attribute
-    const cardRegex =
-      /<a[^>]*class="[^"]*animeCard[^"]*"[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*src="([^"]+)"[^>]*>.*?<h2[^>]*>(.*?)<\/h2>.*?<\/a>/gs;
-    let match;
+    const strategies: CardStrategy[] = [
+      { name: "primary_src", regex: /<a[^>]*class="[^"]*animeCard[^"]*"[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*src="([^"]+)"[^>]*>.*?<h2[^>]*>(.*?)<\/h2>.*?<\/a>/gs },
+      { name: "fallback_data-src", regex: /<a[^>]*class="[^"]*animeCard[^"]*"[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*data-src="([^"]+)"[^>]*>.*?<h2[^>]*>(.*?)<\/h2>.*?<\/a>/gs },
+      { name: "fallback_nextjs_link", regex: /<Link[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*(?:src|data-src)="([^"]+)"[^>]*>.*?<[^>]*>(.*?)<\/[^>]*>.*?<\/Link>/gs },
+      { name: "fallback_generic", regex: /<a[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*(?:src|data-src)="([^"]+)"[^>]*>.*?<(?:h2|h3|span|div|p)[^>]*>(.*?)<\/(?:h2|h3|span|div|p)>.*?<\/a>/gs },
+    ];
+
     let cards: Anime[] = [];
-    while ((match = cardRegex.exec(html)) !== null) {
-      const url = match[1];
-      if (seen.has(url)) continue;
-      seen.add(url);
-      cards = [...cards, {
-        title: this.cleanTitle(match[3].replace(/&amp;/g, "&").replace(/<[^>]*>/g, "").trim()),
-        image: match[2],
-        url: url,
-        status: "",
-      }];
-    }
-    if (cards.length > 0) strategyUsed = "primary_src";
 
-    // Strategy 2: animeCard class with data-src attribute (lazy loading)
-    if (cards.length === 0) {
-      const dataSrcRegex =
-        /<a[^>]*class="[^"]*animeCard[^"]*"[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*data-src="([^"]+)"[^>]*>.*?<h2[^>]*>(.*?)<\/h2>.*?<\/a>/gs;
-      while ((match = dataSrcRegex.exec(html)) !== null) {
-        const url = match[1];
-        if (seen.has(url)) continue;
-        seen.add(url);
-        cards = [...cards, {
-          title: this.cleanTitle(match[3].replace(/&amp;/g, "&").replace(/<[^>]*>/g, "").trim()),
-          image: match[2],
-          url: url,
-          status: "",
-        }];
+    for (const strategy of strategies) {
+      cards = this.extractCardsWithRegex(html, strategy.regex, seen);
+      if (cards.length > 0) {
+        strategyUsed = strategy.name;
+        break;
       }
-      if (cards.length > 0) strategyUsed = "fallback_data-src";
     }
 
-    // Strategy 3: Next.js Link component with image
     if (cards.length === 0) {
-      const nextLinkRegex =
-        /<Link[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*(?:src|data-src)="([^"]+)"[^>]*>.*?<[^>]*>(.*?)<\/[^>]*>.*?<\/Link>/gs;
-      while ((match = nextLinkRegex.exec(html)) !== null) {
-        const url = match[1];
-        if (seen.has(url)) continue;
-        seen.add(url);
-        cards = [...cards, {
-          title: this.cleanTitle(match[3].replace(/&amp;/g, "&").replace(/<[^>]*>/g, "").trim()),
-          image: match[2],
-          url: url,
-          status: "",
-        }];
-      }
-      if (cards.length > 0) strategyUsed = "fallback_nextjs_link";
-    }
-
-    // Strategy 4: Generic - any link to /anime/ with image and title
-    if (cards.length === 0) {
-      const genericRegex =
-        /<a[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*(?:src|data-src)="([^"]+)"[^>]*>.*?<(?:h2|h3|span|div|p)[^>]*>(.*?)<\/(?:h2|h3|span|div|p)>.*?<\/a>/gs;
-      while ((match = genericRegex.exec(html)) !== null) {
-        const url = match[1];
-        if (seen.has(url)) continue;
-        seen.add(url);
-        cards = [...cards, {
-          title: this.cleanTitle(match[3].replace(/&amp;/g, "&").replace(/<[^>]*>/g, "").trim()),
-          image: match[2],
-          url: url,
-          status: "",
-        }];
-      }
-      if (cards.length > 0) strategyUsed = "fallback_generic";
-    }
-
-    // Strategy 5: Last resort - extract all /anime/ links and try to find images nearby
-    if (cards.length === 0) {
-      const linkRegex = /href="\/anime\/([^"]+)"/g;
-      const links = [...html.matchAll(linkRegex)].map((m) => m[1]);
-      const uniqueLinks = [...new Set(links)];
-
-      for (const url of uniqueLinks) {
-        if (seen.has(url)) continue;
-        const linkIndex = html.indexOf(`href="/anime/${url}"`);
-        if (linkIndex === -1) continue;
-
-        const context = html.substring(
-          Math.max(0, linkIndex - 500),
-          Math.min(html.length, linkIndex + 500)
-        );
-        const imgMatch = context.match(/(?:src|data-src)="([^"]+\.(?:jpg|jpeg|png|webp))"/i);
-
-        if (imgMatch) {
-          seen.add(url);
-          cards = [...cards, {
-            title: url.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-            image: imgMatch[1],
-            url: url,
-            status: "",
-          }];
-        }
-      }
+      cards = this.strategyContextSearch(html, seen);
       if (cards.length > 0) strategyUsed = "fallback_context_search";
     }
 

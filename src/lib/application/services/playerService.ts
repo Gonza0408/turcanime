@@ -2,10 +2,9 @@ import { PLAYER_CACHE } from "../../config/cacheTTLs";
 import { getRequiredReferer } from "../../config/embedServers";
 import { getDeps } from "../../di";
 import { VideoServer } from "../../domain/entities";
-import { CacheRepo } from "../../domain/repositories/cacheRepo";
 import { logger } from "../../utils/logger";
 
-const cache = CacheRepo.getInstance(getDeps().storage);
+const cache = getDeps().cacheRepo;
 
 const serverKey = (slug: string, number: string) => `ep_${slug}_${number}`;
 const streamKey = (url: string) => `stream_${url}`;
@@ -100,11 +99,4 @@ export async function resolveStreamUrl(server: VideoServer): Promise<ResolveStre
       fromCache: false,
     };
   }
-}
-
-export async function clearPlayerCache(): Promise<void> {
-  await Promise.all([
-    cache.clearWithPrefix("ep_"),
-    cache.clearWithPrefix("stream_"),
-  ]);
 }

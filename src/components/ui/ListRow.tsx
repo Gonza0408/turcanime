@@ -1,9 +1,9 @@
 import { Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Theme } from "../../constants/Theme";
 import { AnimatedPressable } from "../AnimatedPressable";
+import { ImageWithLoader } from "./ImageWithLoader";
 import { ThemedText } from "./ThemedText";
 
 interface ListRowProps {
@@ -32,11 +32,9 @@ export const ListRow = ({
       >
         {posterUrl && (
           <View style={styles.posterWrap}>
-            <Image
-              source={{ uri: posterUrl }}
+            <ImageWithLoader
+              uri={posterUrl}
               style={styles.poster}
-              contentFit="cover"
-              cachePolicy="memory-disk"
             />
           </View>
         )}

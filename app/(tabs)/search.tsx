@@ -1,4 +1,5 @@
 import AnimeCard from "@/components/AnimeCard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RecentSearches } from "@/components/RecentSearches";
 import { SuggestionsList } from "@/components/SuggestionsList";
 import { AppLoader } from "@/components/ui/AppLoader";
@@ -10,7 +11,6 @@ import {
     TAB_BAR_BOTTOM_OFFSET,
 } from "@/constants/layout";
 import { Theme } from "@/constants/Theme";
-import { NavigationService } from "@/lib/application/services/NavigationService";
 import { Anime } from "@/lib/domain/entities";
 import { useSearchScreen } from "@/lib/hooks/useSearchScreen";
 import { useTabBarManager } from "@/lib/hooks/useTabBarManager";
@@ -23,7 +23,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function SearchScreen() {
+function SearchScreenContent() {
   const {
     searchTerm,
     searchAnimes,
@@ -42,17 +42,16 @@ export default function SearchScreen() {
 
   const insets = useSafeAreaInsets();
   const cardWidth = searchGridCardWidth();
-  const navigationService = NavigationService.getInstance();
 
-  const { handleScroll, reset } = useTabBarManager({ threshold: 8 });
+  const { handleScroll, reset, showTabBar } = useTabBarManager({ threshold: 8 });
 
   // Reset scroll and show tabbar when search ends
   useEffect(() => {
     if (!isSearched) {
       reset();
-      navigationService.resetTabBar();
+      showTabBar();
     }
-  }, [isSearched, reset, navigationService]);
+  }, [isSearched, reset, showTabBar]);
 
   return (
     <ThemedView style={styles.root}>
@@ -83,7 +82,10 @@ export default function SearchScreen() {
               name="x"
               size={16}
               color={Theme.colors.text.secondary}
-              onPress={resetSearch}
+              onPress={() => {
+                resetSearch();
+                showTabBar();
+              }}
               style={styles.clearIcon}
             />
           )}
@@ -146,6 +148,14 @@ export default function SearchScreen() {
         ) : null}
       </ThemedView>
     </ThemedView>
+  );
+}
+
+export default function SearchScreen() {
+  return (
+    <ErrorBoundary>
+      <SearchScreenContent />
+    </ErrorBoundary>
   );
 }
 

@@ -40,7 +40,7 @@ const AnimeCard = ({ anime, width, onPress, variant = "default", episodeNumber }
           uri={anime.image}
           style={[
             styles.poster,
-            { width, height: cardHeight } as any
+            { width, height: cardHeight } as import("react-native").ImageStyle
           ]}
         />
         {/* Badge de episodio para modo continue */}

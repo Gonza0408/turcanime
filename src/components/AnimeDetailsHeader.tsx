@@ -1,5 +1,4 @@
 import { Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { memo } from "react";
 import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
@@ -7,6 +6,7 @@ import { EdgeInsets } from "react-native-safe-area-context";
 import { Theme } from "../constants/Theme";
 import { AnimeDetail } from "../lib/domain/entities";
 import { AnimatedPressable } from "./AnimatedPressable";
+import { ImageWithLoader } from "./ui/ImageWithLoader";
 import { SectionTitle } from "./ui/SectionTitle";
 import { ThemedText } from "./ui/ThemedText";
 
@@ -43,11 +43,9 @@ export const AnimeDetailsHeader = memo(
             { height: windowHeight * 0.35, width: windowWidth },  // Increased from 0.25 for less claustrophobic feel
           ]}
         >
-          <Image
-            source={{ uri: anime?.banner || anime?.poster }}
+          <ImageWithLoader
+            uri={anime?.banner || anime?.poster || ''}
             style={styles.image}
-            contentFit="cover"
-            cachePolicy="memory-disk"
           />
           <LinearGradient
             colors={Theme.colors.overlay.detailsHero}

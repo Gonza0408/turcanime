@@ -1,9 +1,9 @@
 import { ContinueWatching } from "@/components/home/ContinueWatching";
 import { HomeHero } from "@/components/home/HomeHero";
 import { MediaSection } from "@/components/home/MediaSection";
-import { AppLoader } from "@/components/ui/AppLoader";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { WithErrorBoundary } from "@/components/WithErrorBoundary";
 import { TAB_BAR_BOTTOM_OFFSET } from "@/constants/layout";
 import { Theme } from "@/constants/Theme";
 import { SectionItem, useHomeScreen } from "@/lib/hooks/useHomeScreen";
@@ -11,7 +11,7 @@ import { useTabBarManager } from "@/lib/hooks/useTabBarManager";
 import React, { useEffect } from "react";
 import { FlatList, RefreshControl, StyleSheet } from "react-native";
 
-export default function Home() {
+function HomeContent() {
   const { sections, isLoading, error, fetchHome, hasContent } = useHomeScreen();
   const { handleScroll, reset } = useTabBarManager({ threshold: 8 });
 
@@ -35,44 +35,43 @@ export default function Home() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <ThemedView style={styles.root}>
-        <AppLoader variant="full" />
-      </ThemedView>
-    );
-  }
-
-  if (!hasContent && error) {
-    return (
-      <ThemedView style={styles.root}>
-        <ErrorState onRetry={() => fetchHome(true)} />
-      </ThemedView>
-    );
-  }
-
   return (
-    <ThemedView style={styles.root}>
-      <FlatList
-        data={sections}
-        keyExtractor={(item: SectionItem, index: number) => `${item.type}-${index}`}
-        renderItem={renderItem}
-        contentContainerStyle={styles.mainScroll}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={null}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={() => fetchHome(true)}
-            tintColor={Theme.colors.primary}
-          />
-        }
-        accessibilityLabel="Lista de anime"
-        accessibilityRole="list"
-      />
-    </ThemedView>
+    <ScreenWrapper
+      isLoading={isLoading}
+      error={!!error}
+      hasContent={hasContent}
+      onRetry={() => fetchHome(true)}
+    >
+      <ThemedView style={styles.root}>
+        <FlatList
+          data={sections}
+          keyExtractor={(item: SectionItem, index: number) => `${item.type}-${index}`}
+          renderItem={renderItem}
+          contentContainerStyle={styles.mainScroll}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={null}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={() => fetchHome(true)}
+              tintColor={Theme.colors.primary}
+            />
+          }
+          accessibilityLabel="Lista de anime"
+          accessibilityRole="list"
+        />
+      </ThemedView>
+    </ScreenWrapper>
+  );
+}
+
+export default function Home() {
+  return (
+    <WithErrorBoundary>
+      <HomeContent />
+    </WithErrorBoundary>
   );
 }
 

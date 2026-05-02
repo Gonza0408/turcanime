@@ -49,21 +49,22 @@ export const ImageWithLoader = ({
           </ThemedText>
         </View>
       )}
-      {hasError ? (
+      {hasError && (
         <View style={styles.placeholder}>
           <ThemedText variant="caption" color="muted">
             {errorText}
           </ThemedText>
         </View>
-      ) : (
+      )}
+      {!hasError && uri ? (
         <RNImage
-          source={{ uri: uri || '' }}
+          source={{ uri }}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
           onLoad={handleLoad}
           onError={handleError}
         />
-      )}
+      ) : null}
     </ThemedView>
   );
 };

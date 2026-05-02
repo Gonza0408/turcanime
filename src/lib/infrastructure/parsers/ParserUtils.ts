@@ -18,7 +18,7 @@ export class ParserUtils {
       try {
         const data = transformer(match);
         results.push(data);
-      } catch (error) {
+      } catch {
         results.push(null);
       }
     }

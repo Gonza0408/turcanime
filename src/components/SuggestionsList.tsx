@@ -1,10 +1,11 @@
-import { Image } from "expo-image";
 import React, { memo } from "react";
-import { FlatList, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, View } from "react-native";
+import { NativeScrollEvent, NativeSyntheticEvent, StyleSheet, View } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { TAB_BAR_BOTTOM_OFFSET } from "../constants/layout";
 import { Theme } from "../constants/Theme";
 import { AutocompleteAnime } from "../lib/domain/entities";
 import { AnimatedPressable } from "./AnimatedPressable";
+import { ImageWithLoader } from "./ui/ImageWithLoader";
 import { ThemedText } from "./ui/ThemedText";
 
 interface SuggestionsListProps {
@@ -27,21 +28,19 @@ export const SuggestionsList = memo(({ suggestions, onSelect, onScroll, tabBarOf
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <FlashList
         data={suggestions}
         keyExtractor={(item) => item.slug}
         contentContainerStyle={{ paddingBottom: tabBarOffset ?? TAB_BAR_BOTTOM_OFFSET }}
         onScroll={onScroll}
         scrollEventThrottle={16}
-          renderItem={({ item }) => (
-            <AnimatedPressable style={styles.row} onPress={() => onSelect(item)}>
-              <View style={styles.posterWrap}>
+        renderItem={({ item }) => (
+          <AnimatedPressable style={styles.row} onPress={() => onSelect(item)}>
+            <View style={styles.posterWrap}>
               {item.poster ? (
-                <Image
-                  source={{ uri: resolvePoster(item.poster) }}
+                <ImageWithLoader
+                  uri={resolvePoster(item.poster)}
                   style={styles.poster}
-                  contentFit="cover"
-                  cachePolicy="memory-disk"
                 />
               ) : null}
             </View>

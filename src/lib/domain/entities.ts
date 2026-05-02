@@ -10,7 +10,6 @@ export interface Anime {
   image: string;
   url: string; // This is the slug
   status: string;
-  rating?: string;
 }
 
 export interface Episode {
@@ -38,6 +37,7 @@ export interface HomeData {
   recent: Anime[];
   popular: Anime[];
   topViewed: Anime[];
+  sections?: { items: Anime[] }[];
 }
 
 export interface HistoryItem {

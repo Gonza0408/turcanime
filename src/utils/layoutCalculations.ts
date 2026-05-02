@@ -55,11 +55,3 @@ export const calculateSearchCardWidth = (screenWidth?: number): number => {
 export const calculateTabBarOffset = (): number => {
   return SpacingTokens.lg + GridConfig.tabbar.floatingIslandHeight;
 };
-
-export const validateDimensions = (dimensions: { width: number; height: number }): boolean => {
-  return dimensions.width > 0 && dimensions.height > 0;
-};
-
-export const clampValue = (value: number, min: number, max: number): number => {
-  return Math.min(Math.max(value, min), max);
-};

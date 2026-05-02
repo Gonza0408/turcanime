@@ -1,10 +1,11 @@
-import { Image } from "expo-image";
 import React, { memo } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { Theme } from "../../constants/Theme";
 import { HistoryItem } from "../../lib/domain/entities";
 import { navigateToAnime } from "../../lib/utils/navigation";
 import { AnimatedPressable } from "../AnimatedPressable";
+import { ImageWithLoader } from "../ui/ImageWithLoader";
 import { SectionTitle } from "../ui/SectionTitle";
 import { ThemedText } from "../ui/ThemedText";
 
@@ -15,20 +16,15 @@ interface ContinueWatchingProps {
 export const ContinueWatching = memo(({ items }: ContinueWatchingProps) => {
   if (!items || items.length === 0) return null;
 
-  const cardWidth = Theme.dimensions.poster.md.width;
-  const gap = Theme.spacing.md;
-
   const renderItem = ({ item }: { item: HistoryItem }) => (
     <AnimatedPressable
       style={styles.card}
       onPress={() => navigateToAnime(item.url)}
       accessibilityLabel={`Continuar viendo: ${item.title}`}
     >
-      <Image
-        source={{ uri: item.image }}
+      <ImageWithLoader
+        uri={item.image}
         style={styles.image}
-        contentFit="cover"
-        cachePolicy="memory-disk"
       />
       <View style={styles.overlay}>
         <ThemedText variant="caption" style={styles.episodeLabel}>
@@ -46,23 +42,13 @@ export const ContinueWatching = memo(({ items }: ContinueWatchingProps) => {
       <View style={styles.titleWrapper}>
         <SectionTitle>Continuar viendo</SectionTitle>
       </View>
-      <FlatList
+      <FlashList
         horizontal
         data={items}
         keyExtractor={(item) => item.url}
         renderItem={renderItem}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.sectionPadding}
-        // Performance optimizations
-        removeClippedSubviews={true}
-        maxToRenderPerBatch={5}
-        initialNumToRender={3}
-        windowSize={5}
-        getItemLayout={(data, index) => ({
-          length: cardWidth + gap,
-          offset: (cardWidth + gap) * index,
-          index,
-        })}
       />
     </View>
   );

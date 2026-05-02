@@ -12,7 +12,7 @@ export function navigateToPlayer(params: {
   slug: string;
   number: string;
   title: string;
-  img: string;
+  image: string;
 }) {
   router.push({
     pathname: "/player",

@@ -134,7 +134,7 @@ function AnimeDetailsContent() {
               slug: slug as string,
               number: selectedEpisode.number,
               title: anime.title,
-              img: anime.image,
+              image: anime.image,
             });
           }
         }}

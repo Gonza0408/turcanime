@@ -1,44 +1,46 @@
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { WithErrorBoundary } from "@/components/WithErrorBoundary";
 import { Theme } from "@/constants/Theme";
-import { NavigationService } from "@/lib/application/services/NavigationService";
-import { PlayerUIService } from "@/lib/application/services/PlayerUIService";
+import { useServices } from "@/lib/hooks/useServices";
 import { usePlayerStore } from "@/lib/store/playerStore";
 import { useUserStore } from "@/lib/store/userStore";
 import { useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useVideoPlayer, VideoView } from "expo-video";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 function PlayerContent() {
-  const { slug, number, title: pTitle, img: pImg } = useLocalSearchParams();
+  const { slug, number, title, image } = useLocalSearchParams();
   const { streamUrl, streamHeaders, reset: clearStream } = usePlayerStore();
   const { addToHistory } = useUserStore();
-
-  const playerService = useMemo(() => new PlayerUIService(), []);
-  const navigationService = useMemo(() => NavigationService.getInstance(), []);
+  const { playerUIService } = useServices();
 
   // Immersive orientation
   useEffect(() => {
-    playerService.setupImmersiveMode();
+    playerUIService.setupImmersiveMode();
 
     return () => {
-      playerService.cleanupImmersiveMode();
+      playerUIService.cleanupImmersiveMode();
       clearStream();
     };
-  }, [clearStream]);
+  }, [clearStream, playerUIService]);
 
-  // Save to history
+  // Save to history when stream is ready
   useEffect(() => {
-    if (streamUrl && pTitle && pImg) {
-      navigationService.saveToHistory({
-        title: pTitle as string,
-        image: pImg as string,
-        url: slug as string,
-        number: number as string,
+    if (streamUrl && title && image) {
+      playerUIService.saveToHistory(
+        {
+          title: title as string,
+          image: image as string,
+          url: slug as string,
+          number: number as string,
+        },
+        addToHistory
+      ).catch(error => {
+        console.error("Failed to save to history:", error);
       });
     }
-  }, [streamUrl, pTitle, pImg, slug, number]);
+  }, [streamUrl, title, image, slug, number, playerUIService, addToHistory]);
 
   // Video player - initialized directly with URL
   const videoSource = streamUrl
@@ -78,8 +80,8 @@ const styles = StyleSheet.create({
 
 export default function NativePlayer() {
   return (
-    <ErrorBoundary>
+    <WithErrorBoundary>
       <PlayerContent />
-    </ErrorBoundary>
+    </WithErrorBoundary>
   );
 }

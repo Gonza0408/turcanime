@@ -45,12 +45,12 @@ export class PlayerUIService {
     }
   }
 
-  saveToHistory(
+  async saveToHistory(
     params: HistoryParams,
-    addToHistory: (params: HistoryParams & { timestamp: number }) => void
-  ): void {
+    addToHistory: (params: HistoryParams & { timestamp: number }) => Promise<void>
+  ): Promise<void> {
     if (params.title && params.image && params.url && params.number) {
-      addToHistory({
+      await addToHistory({
         ...params,
         timestamp: Date.now(),
       });

@@ -2,7 +2,7 @@ import { ANIMELATINO_CONFIG } from "../../config/providerConfigs";
 import { TIMEOUTS } from "../../config/timeouts";
 import { ISession, IWebViewBridge, WebViewMessageData } from "../../domain/interfaces";
 import { logger } from "../../utils/logger";
-import { IFRAME_EXTRACT_JS } from "../webview/injectionScripts";
+import { HLS_EXTRACT_JS, IFRAME_EXTRACT_JS } from "../webview/injectionScripts";
 
 // ─── Internal types ────────────────────────────────────────────────────
 
@@ -231,6 +231,62 @@ export class WebViewBridge implements IWebViewBridge {
     };
 
     // Start polling after initial delay to let page begin loading
+    setTimeout(poll, interval);
+  }
+
+  /**
+   * Resolves a stream URL by navigating to an embed player page and
+   * extracting the HLS (.m3u8) or MP4 video source from the DOM.
+   */
+  async resolveEmbedStreamUrl(embedUrl: string): Promise<string | null> {
+    if (!this.navigateFn) throw new Error("WebView navigation not registered");
+
+    const requestId = `embed_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    this.clearPendingRequests();
+
+    const promise = this.timeoutPromise(requestId, TIMEOUTS.DECRYPTION);
+
+    logger.debug("WebViewBridge", `Navigating to embed URL: ${embedUrl}`);
+    this.navigateFn(embedUrl);
+
+    try {
+      await this.waitForPageLoad(TIMEOUTS.EMBED_PAGE_LOAD);
+      logger.debug("WebViewBridge", "Embed page loaded, starting HLS extraction polling.");
+    } catch {
+      logger.debug("WebViewBridge", "Embed page load timed out, proceeding with extraction anyway.");
+    }
+
+    this.pollForHls(requestId);
+
+    const result = await promise;
+    return result;
+  }
+
+  private pollForHls(requestId: string): void {
+    let attempts = 0;
+    const maxAttempts = TIMEOUTS.IFRAME_POLL_MAX_ATTEMPTS;
+    const interval = TIMEOUTS.IFRAME_POLL_INTERVAL;
+
+    const poll = () => {
+      if (!this.injectFn || !this.activeDecryptions.has(requestId)) return;
+
+      attempts++;
+
+      if (attempts > maxAttempts) {
+        logger.debug("WebViewBridge", `HLS extraction polling exhausted after ${maxAttempts} attempts`);
+        return;
+      }
+
+      this.injectFn(HLS_EXTRACT_JS);
+
+      // If not resolved yet, schedule next poll
+      if (this.activeDecryptions.has(requestId)) {
+        setTimeout(poll, interval);
+      }
+    };
+
+    // Start polling after initial delay to let SPA initialize video
     setTimeout(poll, interval);
   }
 }

@@ -20,6 +20,9 @@ export const TIMEOUTS = {
   /** Max time to wait for page load during episode page navigation */
   EPISODE_PAGE_LOAD: 5000,
 
+  /** Max time to wait for embed player page to load and initialize video */
+  EMBED_PAGE_LOAD: 5000,
+
   /** Polling interval for iframe extraction (ms) */
   IFRAME_POLL_INTERVAL: 500,
 

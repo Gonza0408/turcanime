@@ -11,6 +11,7 @@ import { TAB_BAR_BOTTOM_OFFSET } from "@/constants/layout";
 import { Theme } from "@/constants/Theme";
 import { useAnimeDetailScreen } from "@/lib/hooks/useAnimeDetailScreen";
 import { navigateBack, navigateToPlayer } from "@/lib/utils/navigation";
+import { useUserStore } from "@/lib/store/userStore";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
@@ -25,6 +26,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 function AnimeDetailsContent() {
   const { slug } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
+  const { addToHistory } = useUserStore();
   const {
     anime,
     isAnimeLoading,
@@ -130,6 +132,13 @@ function AnimeDetailsContent() {
           resolveStream(server);
           setSelectedEpisode(null);
           if (selectedEpisode && anime) {
+            addToHistory({
+              title: anime.title,
+              image: anime.image,
+              url: slug as string,
+              number: selectedEpisode.number,
+              timestamp: Date.now(),
+            }).catch(() => {});
             navigateToPlayer({
               slug: slug as string,
               number: selectedEpisode.number,

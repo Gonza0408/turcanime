@@ -1,4 +1,4 @@
-import { Anime } from "../../domain/entities";
+import { Anime, Episode } from "../../domain/entities";
 import { log } from "../../utils/logger";
 import { cleanTitle } from "../../utils/text";
 import { ParserUtils } from "./ParserUtils";
@@ -214,5 +214,51 @@ export class HtmlParser {
       if (cleaned.length > MIN_TITLE_LENGTH) return cleaned;
     }
     return null;
+  }
+
+  extractTitleFromHtml(html: string): string {
+    const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/);
+    if (h1Match) {
+      return h1Match[1].trim();
+    }
+    return "";
+  }
+
+  extractStatusFromHtml(html: string): string {
+    const statusMatch = html.match(/<span[^>]*class="[^"]*text-primary[^"]*"[^>]*>([^<]+)<\/span>/);
+    if (statusMatch) {
+      return statusMatch[1].trim();
+    }
+    return "";
+  }
+
+  parseEpisodesFromHtml(html: string, slug: string): Episode[] {
+    const episodeRegex = /<a[^>]*href="\/ver\/([^/]+)\/(\d+)"[^>]*>/g;
+    const episodes: Episode[] = [];
+    const seen = new Set<string>();
+    let match;
+
+    while ((match = episodeRegex.exec(html)) !== null) {
+      const episodeSlug = match[1];
+      const number = match[2];
+
+      if (episodeSlug !== slug) continue;
+
+      const key = `${slug}-${number}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      episodes.push({
+        id: number,
+        number,
+        url: `/ver/${slug}/${number}`,
+      });
+    }
+
+    if (episodes.length === 0) {
+      log("HtmlParser", `No episodes extracted for ${slug} from HTML`);
+    }
+
+    return episodes;
   }
 }

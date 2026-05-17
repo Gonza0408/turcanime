@@ -22,24 +22,29 @@ const MIN_TITLE_LENGTH = 20;
 // Card extraction strategies ordered by priority
 const CARD_STRATEGIES: CardStrategy[] = [
   {
+    name: "recent_animes",
+    regex: /<a[^>]*class="group block"[^>]*href="\/anime\/([^"]+)"[^>]*>[\s\S]*?<img[^>]*src="([^"]+)"[\s\S]*?alt="([^"]+)"[\s\S]*?<h3[^>]*>([\s\S]*?)<\/h3>[\s\S]*?<\/a\s*>/g,
+    extractCard: (match) => null,
+  },
+  {
     name: "primary_src",
-    regex: /<a[^>]*class="[^"]*animeCard[^"]*"[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*src="([^"]+)"[^>]*>.*?<h2[^>]*>(.*?)<\/h2>.*?<\/a>/gs,
-    extractCard: (match) => null, // Will be set in constructor
+    regex: /<a[^>]*class="[^"]*animeCard[^"]*"[^>]*href="\/anime\/([^"]+)"[^>]*>[\s\S]*?<img[^>]*src="([^"]+)"[\s\S]*?>[\s\S]*?<h2[^>]*>([\s\S]*?)<\/h2>[\s\S]*?<\/a\s*>/g,
+    extractCard: (match) => null,
   },
   {
     name: "fallback_data-src",
-    regex: /<a[^>]*class="[^"]*animeCard[^"]*"[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*data-src="([^"]+)"[^>]*>.*?<h2[^>]*>(.*?)<\/h2>.*?<\/a>/gs,
-    extractCard: (match) => null, // Will be set in constructor
+    regex: /<a[^>]*class="[^"]*animeCard[^"]*"[^>]*href="\/anime\/([^"]+)"[^>]*>[\s\S]*?<img[^>]*data-src="([^"]+)"[\s\S]*?>[\s\S]*?<h2[^>]*>([\s\S]*?)<\/h2>[\s\S]*?<\/a\s*>/g,
+    extractCard: (match) => null,
   },
   {
     name: "fallback_nextjs_link",
-    regex: /<Link[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*(?:src|data-src)="([^"]+)"[^>]*>.*?<[^>]*>(.*?)<\/[^>]*>.*?<\/Link>/gs,
-    extractCard: (match) => null, // Will be set in constructor
+    regex: /<Link[^>]*href="\/anime\/([^"]+)"[^>]*>[\s\S]*?<img[^>]*(?:src|data-src)="([^"]+)"[\s\S]*?>[\s\S]*?<[^>]*>([\s\S]*?)<\/[^>]*>[\s\S]*?<\/Link\s*>/g,
+    extractCard: (match) => null,
   },
   {
     name: "fallback_generic",
-    regex: /<a[^>]*href="\/anime\/([^"]+)"[^>]*>.*?<img[^>]*(?:src|data-src)="([^"]+)"[^>]*>.*?<(?:h2|h3|span|div|p)[^>]*>(.*?)<\/(?:h2|h3|span|div|p)>.*?<\/a>/gs,
-    extractCard: (match) => null, // Will be set in constructor
+    regex: /<a[^>]*href="\/anime\/([^"]+)"[^>]*>[\s\S]*?<img[^>]*(?:src|data-src)="([^"]+)"[\s\S]*?>[\s\S]*?<(?:h2|h3|span|div|p)[^>]*>([\s\S]*?)<\/(?:h2|h3|span|div|p)>[\s\S]*?<\/a\s*>/g,
+    extractCard: (match) => null,
   },
 ];
 
@@ -87,10 +92,11 @@ export class HtmlParser {
 
         const context = this.extractContextAroundLink(html, linkIndex);
         const imageUrl = ParserUtils.extractImageUrl(context);
+        const altTitle = this.extractTitleFromAltAttribute(context);
 
         if (imageUrl) {
           seen.add(url);
-          const title = this.formatTitleFromUrl(url);
+          const title = altTitle || this.formatTitleFromUrl(url);
           return this.createAnimeCard(url, imageUrl, title);
         }
         return null;
@@ -109,6 +115,11 @@ export class HtmlParser {
     return url
       .replace(/-/g, " ")
       .replace(/\b\w/g, (l) => l.toUpperCase());
+  }
+
+  private extractTitleFromAltAttribute(context: string): string | null {
+    const altMatch = context.match(/alt="([^"]+)"/);
+    return altMatch ? altMatch[1].trim() : null;
   }
 
   parseCards(html: string): ParseResult {
@@ -140,7 +151,7 @@ export class HtmlParser {
   }
 
   private logParsingInfo(html: string): void {
-    log("HtmlParser", `HTML length: ${html.length}, contains animeCard: ${html.includes("animeCard")}`);
+    log("HtmlParser", `HTML length: ${html.length}, contains "group block": ${html.includes("group block")}, contains animeCard: ${html.includes("animeCard")}`);
     log("HtmlParser", `Contains /anime/ links: ${html.includes("/anime/")}`);
   }
 

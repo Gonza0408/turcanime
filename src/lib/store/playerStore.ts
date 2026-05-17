@@ -18,7 +18,7 @@ interface PlayerState {
     force?: boolean,
     signal?: AbortSignal,
   ) => Promise<void>;
-  resolveStream: (server: VideoServer, episodeUrl?: string) => Promise<void>;
+  resolveStream: (server: VideoServer) => Promise<void>;
   reset: () => void;
   clearError: () => void;
 }
@@ -40,9 +40,9 @@ export const usePlayerStore = create<PlayerState>((set) => ({
     });
   },
 
-  resolveStream: async (server: VideoServer, episodeUrl?: string) => {
+  resolveStream: async (server: VideoServer) => {
     set({ isLoading: true, streamUrl: null, streamHeaders: null, error: null });
-    const result = await resolveStreamUrl(server, episodeUrl);
+    const result = await resolveStreamUrl(server);
     if (result.stream) {
       set({
         streamUrl: result.stream.url,

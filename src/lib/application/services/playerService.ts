@@ -70,10 +70,10 @@ export async function resolveStreamUrl(server: VideoServer, episodeUrl?: string)
     return { stream: cached, error: null, fromCache: true };
   }
 
-  // Resolve via WebView
+  // Resolve via provider (fetch bridge_url HTML and extract iframe src)
   logger.debug("playerService", `resolving stream for ${server.url}`);
   try {
-    const result = await getDeps().webViewBridge.resolveStreamUrl(server.url, episodeUrl);
+    const result = await getDeps().getProvider().resolveStreamUrl(server.url);
     logger.debug("playerService", `resolved stream: ${result ? "OK" : "null"}`);
 
     if (!result) {

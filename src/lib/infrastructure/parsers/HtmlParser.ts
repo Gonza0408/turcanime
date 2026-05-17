@@ -261,4 +261,15 @@ export class HtmlParser {
 
     return episodes;
   }
+
+  extractSynopsisFromJsonLd(html: string): string | null {
+    const jsonLdMatch = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+    if (!jsonLdMatch) return null;
+    try {
+      const data = JSON.parse(jsonLdMatch[1]);
+      return data.description || null;
+    } catch {
+      return null;
+    }
+  }
 }

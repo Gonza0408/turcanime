@@ -1,4 +1,3 @@
-import { registerProvider } from "../../core/providerFactory";
 import { AbstractProvider } from "../../domain/abstractProvider";
 import {
     Anime,
@@ -233,6 +232,3 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
   }
 
 }
-
-// Self-register as the "safe" mode provider
-registerProvider("safe", AnimeLatinoProvider);

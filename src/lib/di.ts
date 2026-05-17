@@ -7,10 +7,12 @@
  */
 import { PlayerUIService } from "./application/services/PlayerUIService";
 import { sessionManager, storage, webViewBridge } from "./core/infrastructure";
-import { getProvider, initProvider } from "./core/providerRegistry";
+import { getProvider, setProvider } from "./core/providerRegistry";
 import { ISessionManager, IStorage, IWebViewBridge } from "./domain/interfaces";
 import { CacheRepo } from "./domain/repositories/cacheRepo";
+import { AnimeLatinoProvider } from "./infrastructure/providers/AnimeLatinoProvider";
 import { ImageService } from "./infrastructure/services/ImageService";
+import { ANIMELATINO_CONFIG } from "./config/providerConfigs";
 import { logger } from "./utils/logger";
 
 // ─── Dependencies interface ────────────────────────────────────────────
@@ -46,6 +48,7 @@ export function initializeDeps(): { deps: AppDependencies; ready: Promise<void> 
 
   isInitializing = true;
 
+  const cacheRepo = new CacheRepo(storage);
   deps = {
     storage,
     webViewBridge,
@@ -53,14 +56,19 @@ export function initializeDeps(): { deps: AppDependencies; ready: Promise<void> 
     getProvider,
     playerUIService: new PlayerUIService(),
     imageService: new ImageService(),
-    cacheRepo: new CacheRepo(storage),
+    cacheRepo,
   };
 
+  const provider = new AnimeLatinoProvider(
+    sessionManager,
+    cacheRepo,
+    ANIMELATINO_CONFIG.baseUrl,
+  );
+  setProvider(provider);
+
   initPromise = Promise.resolve().then(async () => {
-    // Initialize logger with storage before anything else
     logger.setStorage(storage);
     await sessionManager.initialize();
-    initProvider();
   }).catch(e => {
     logger.error("DI", "Initialization failed", e);
   }).finally(() => {

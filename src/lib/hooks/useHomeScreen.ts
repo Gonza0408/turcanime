@@ -10,12 +10,10 @@ export type SectionItem =
 
 const SECTION_LABELS = {
   recent: "Recién agregados",
-  popular: "Populares",
-  topViewed: "Más vistos",
 };
 
 function buildSections(
-  homeData: { popular?: Anime[]; recent?: Anime[]; topViewed?: Anime[] },
+  homeData: { recent?: Anime[] },
   heroSource: Anime | undefined,
   continueWatchingItems: HistoryItem[]
 ): SectionItem[] {
@@ -23,8 +21,6 @@ function buildSections(
     ...(heroSource ? [{ type: "HERO" as const, data: heroSource }] : []),
     ...(continueWatchingItems.length > 0 ? [{ type: "CONTINUE" as const, items: continueWatchingItems }] : []),
     ...(homeData.recent && homeData.recent.length > 0 ? [{ type: "SECTION" as const, label: SECTION_LABELS.recent, items: homeData.recent }] : []),
-    ...(homeData.popular && homeData.popular.length > 0 ? [{ type: "SECTION" as const, label: SECTION_LABELS.popular, items: homeData.popular }] : []),
-    ...(homeData.topViewed && homeData.topViewed.length > 0 ? [{ type: "SECTION" as const, label: SECTION_LABELS.topViewed, items: homeData.topViewed }] : []),
   ];
 }
 
@@ -39,7 +35,7 @@ export function useHomeScreen() {
   }, [cacheInvalidationTimestamp, fetchHome]);
 
   const sections = useMemo(() => {
-    const heroSource = homeData.popular?.[0];
+    const heroSource = homeData.recent?.[0];
     return buildSections(homeData, heroSource, continueWatching);
   }, [homeData, continueWatching]);
 

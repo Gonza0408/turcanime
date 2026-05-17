@@ -35,8 +35,6 @@ export interface VideoServer {
 
 export interface HomeData {
   recent: Anime[];
-  popular: Anime[];
-  topViewed: Anime[];
   sections?: { items: Anime[] }[];
 }
 

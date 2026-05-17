@@ -1,9 +1,7 @@
 import { log } from "../../utils/logger";
 
 export interface RscExtractionResult {
-  genres: string[];
   poster: string;
-  status: string;
   synopsis: string | null;
 }
 
@@ -32,25 +30,6 @@ export class RscParser {
     if (idx === -1) return "";
     const end = rsc.indexOf('"', idx + tmdbPattern.length);
     return end !== -1 ? rsc.slice(idx, end) : "";
-  }
-
-  extractStatus(rsc: string): string {
-    const statusIdx = rsc.indexOf('"Estado"');
-    if (statusIdx === -1) return "";
-    const childrenIdx = rsc.indexOf('"children":"', statusIdx + 10);
-    if (childrenIdx === -1) return "";
-    const end = rsc.indexOf('"', childrenIdx + 12);
-    return end !== -1 ? rsc.slice(childrenIdx + 12, end) : "";
-  }
-
-  extractGenres(rsc: string): string[] {
-    if (rsc.includes('"Género"')) {
-      const genreMatch = rsc.match(/"Género"\s*,\s*"children"\s*:\s*"([^"]+)"/);
-      if (genreMatch) {
-        return genreMatch[1].split(",").map((g) => g.trim()).filter((g) => g.length > 0);
-      }
-    }
-    return [];
   }
 
   extractSynopsis(rsc: string, fullHtml: string): string | null {
@@ -141,10 +120,8 @@ export class RscParser {
 
   parseAllFromScripts(
     html: string
-  ): { poster: string; status: string; genres: string[]; synopsis: string | null } {
+  ): { poster: string; synopsis: string | null } {
     let poster = "";
-    let status = "";
-    let genres: string[] = [];
     let synopsis: string | null = null;
     let synopsisLocked = false;
 
@@ -155,17 +132,8 @@ export class RscParser {
       const p = this.parseRscPayload(text);
       if (!p) continue;
 
-      // Extract genres from RSC
-      if (!genres.length) {
-        genres = this.extractGenres(p);
-      }
-
       if (!poster) {
         poster = this.extractPosterUrl(p);
-      }
-
-      if (!status) {
-        status = this.extractStatus(p);
       }
 
       if (!synopsisLocked) {
@@ -177,6 +145,6 @@ export class RscParser {
       }
     }
 
-    return { poster, status, genres, synopsis };
+    return { poster, synopsis };
   }
 }

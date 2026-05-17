@@ -20,6 +20,12 @@ export const TIMEOUTS = {
   /** Max time to wait for page load during episode page navigation */
   EPISODE_PAGE_LOAD: 5000,
 
+  /** Polling interval for iframe extraction (ms) */
+  IFRAME_POLL_INTERVAL: 500,
+
+  /** Max polling attempts for iframe extraction */
+  IFRAME_POLL_MAX_ATTEMPTS: 20,
+
   /** Delays for JWPlayer extraction script injections (staggered) */
   JWPLAYER_DELAYS: [1500, 3000, 5000] as const,
 

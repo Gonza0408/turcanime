@@ -129,12 +129,15 @@ export class WebViewBridge implements IWebViewBridge {
 
     this.clearPendingRequests();
 
-    logger.debug("WebViewBridge", "Starting session wash: navigating to Home...");
-    this.navigateFn(ANIMELATINO_CONFIG.sessionWashUrl);
+    // Derive session wash domain from the video URL to ensure cookies
+    // are set for the correct subdomain (e.g., website.animelatinohd.com)
+    const washDomain = this.extractOrigin(videoUrl);
+    logger.debug("WebViewBridge", `Starting session wash: navigating to ${washDomain}...`);
+    this.navigateFn(washDomain);
 
     try {
       await this.waitForPageLoad(TIMEOUTS.PAGE_LOAD);
-      logger.debug("WebViewBridge", "Session wash complete: Home loaded.");
+      logger.debug("WebViewBridge", "Session wash complete.");
     } catch {
       logger.debug("WebViewBridge", "Session wash timed out or failed, proceeding anyway.");
     }
@@ -156,10 +159,19 @@ export class WebViewBridge implements IWebViewBridge {
     logger.debug("WebViewBridge", `Navigating to bridge URL: ${videoUrl}`);
     this.navigateFn(videoUrl);
 
-    this.scheduleIframeExtraction(requestId);
+    this.pollForIframe(requestId);
 
     const result = await promise;
     return result;
+  }
+
+  private extractOrigin(url: string): string {
+    try {
+      return new URL(url).origin;
+    } catch {
+      // Fallback to configured session wash URL if URL parsing fails
+      return ANIMELATINO_CONFIG.sessionWashUrl;
+    }
   }
 
   private clearPendingRequests(): void {
@@ -195,11 +207,30 @@ export class WebViewBridge implements IWebViewBridge {
     });
   }
 
-  private scheduleIframeExtraction(requestId: string) {
-    setTimeout(() => {
-      if (this.injectFn && this.activeDecryptions.has(requestId)) {
-        this.injectFn(IFRAME_EXTRACT_JS);
+  private pollForIframe(requestId: string): void {
+    let attempts = 0;
+    const maxAttempts = TIMEOUTS.IFRAME_POLL_MAX_ATTEMPTS;
+    const interval = TIMEOUTS.IFRAME_POLL_INTERVAL;
+
+    const poll = () => {
+      if (!this.injectFn || !this.activeDecryptions.has(requestId)) return;
+
+      attempts++;
+
+      if (attempts > maxAttempts) {
+        logger.debug("WebViewBridge", `Iframe extraction polling exhausted after ${maxAttempts} attempts`);
+        return;
       }
-    }, 2000);
+
+      this.injectFn(IFRAME_EXTRACT_JS);
+
+      // If not resolved yet, schedule next poll
+      if (this.activeDecryptions.has(requestId)) {
+        setTimeout(poll, interval);
+      }
+    };
+
+    // Start polling after initial delay to let page begin loading
+    setTimeout(poll, interval);
   }
 }

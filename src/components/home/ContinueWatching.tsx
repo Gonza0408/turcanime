@@ -56,8 +56,8 @@ export const ContinueWatching = memo(({ items }: ContinueWatchingProps) => {
 
 const styles = StyleSheet.create({
   sectionContainer: { marginTop: Theme.spacing.xl },
-  titleWrapper: { paddingHorizontal: Theme.edge.horizontal },
-  sectionPadding: { paddingHorizontal: Theme.edge.horizontal },
+  titleWrapper: {},
+  sectionPadding: {},
   card: {
     width: Theme.dimensions.poster.md.width,
     height: Theme.dimensions.poster.md.height,

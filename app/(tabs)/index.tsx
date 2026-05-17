@@ -1,6 +1,5 @@
 import { ContinueWatching } from "@/components/home/ContinueWatching";
-import { HomeHero } from "@/components/home/HomeHero";
-import { MediaSection } from "@/components/home/MediaSection";
+import { AnimeGridSection } from "@/components/home/AnimeGridSection";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { WithErrorBoundary } from "@/components/WithErrorBoundary";
@@ -21,14 +20,11 @@ const HomeContent = React.memo(function HomeContent() {
   }, [fetchHome, reset]);
 
   const renderItem = ({ item }: { item: SectionItem }) => {
-    if (item.type === "HERO") {
-      return <HomeHero featured={item.data} />;
-    }
     if (item.type === "CONTINUE") {
       return <ContinueWatching items={item.items} />;
     }
     return (
-      <MediaSection
+      <AnimeGridSection
         label={item.label}
         items={item.items}
       />

@@ -63,19 +63,11 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
 
     const recent = this.parseCardsWithMetrics(html);
 
-    const [popRes, topRes] = await Promise.all([
-      this.fetchWithSession("/animes/populares"),
-      this.fetchWithSession("/animes/mas-vistos"),
-    ]);
-
-    const popular = this.parseCardsWithMetrics(await popRes.text());
-    const topViewed = this.parseCardsWithMetrics(await topRes.text());
-
-    if (recent.length === 0 && popular.length === 0) {
+    if (recent.length === 0) {
       log("getHomeData", "No cards extracted — site structure may have changed");
     }
 
-    return { recent, popular, topViewed };
+    return { recent };
   }
 
   async search(query: string, options?: { signal?: AbortSignal }): Promise<Anime[]> {
@@ -122,8 +114,8 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
       synopsis,
       banner: meta.banner || rscData.poster,
       poster: rscData.poster,
-      status: rscData.status || "Finalizado",
-      genres: rscData.genres,
+      status: "",
+      genres: [],
       episodes,
       url: slug,
     };

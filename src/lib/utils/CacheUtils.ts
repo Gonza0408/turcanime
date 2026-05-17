@@ -14,11 +14,3 @@ export function encodeCacheKey(str: string): string {
 export function createCacheKey(prefix: string, identifier: string): string {
   return `${prefix}_${encodeCacheKey(identifier)}`;
 }
-
-export interface CacheOptions<T> {
-  cacheKey: string;
-  cacheTtl: number;
-  errorMessage: string;
-  fetchFn: (signal: AbortSignal) => Promise<T>;
-  force?: boolean;
-}

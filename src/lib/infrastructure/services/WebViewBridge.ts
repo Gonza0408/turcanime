@@ -2,7 +2,7 @@ import { ANIMELATINO_CONFIG } from "../../config/providerConfigs";
 import { TIMEOUTS } from "../../config/timeouts";
 import { ISession, IWebViewBridge, WebViewMessageData } from "../../domain/interfaces";
 import { logger } from "../../utils/logger";
-import { JWPLAYER_EXTRACT_JS } from "../webview/injectionScripts";
+import { IFRAME_EXTRACT_JS } from "../webview/injectionScripts";
 
 // ─── Internal types ────────────────────────────────────────────────────
 
@@ -122,7 +122,7 @@ export class WebViewBridge implements IWebViewBridge {
     return null;
   }
 
-  async resolveStreamUrl(videoUrl: string): Promise<string | null> {
+  async resolveStreamUrl(videoUrl: string, episodeUrl?: string): Promise<string | null> {
     if (!this.navigateFn) throw new Error("WebView navigation not registered");
 
     const requestId = `stream_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -139,12 +139,24 @@ export class WebViewBridge implements IWebViewBridge {
       logger.debug("WebViewBridge", "Session wash timed out or failed, proceeding anyway.");
     }
 
+    if (episodeUrl) {
+      logger.debug("WebViewBridge", `Navigating to episode page: ${episodeUrl}`);
+      this.navigateFn(episodeUrl);
+
+      try {
+        await this.waitForPageLoad(TIMEOUTS.EPISODE_PAGE_LOAD);
+        logger.debug("WebViewBridge", "Episode page loaded.");
+      } catch {
+        logger.debug("WebViewBridge", "Episode page load timed out, proceeding anyway.");
+      }
+    }
+
     const promise = this.timeoutPromise(requestId, TIMEOUTS.DECRYPTION);
 
-    logger.debug("WebViewBridge", `Navigating to video URL: ${videoUrl}`);
+    logger.debug("WebViewBridge", `Navigating to bridge URL: ${videoUrl}`);
     this.navigateFn(videoUrl);
 
-    this.scheduleJwplayerExtraction(requestId);
+    this.scheduleIframeExtraction(requestId);
 
     const result = await promise;
     return result;
@@ -183,13 +195,11 @@ export class WebViewBridge implements IWebViewBridge {
     });
   }
 
-  private scheduleJwplayerExtraction(requestId: string) {
-    for (const delay of TIMEOUTS.JWPLAYER_DELAYS) {
-      setTimeout(() => {
-        if (this.injectFn && this.activeDecryptions.has(requestId)) {
-          this.injectFn(JWPLAYER_EXTRACT_JS);
-        }
-      }, delay);
-    }
+  private scheduleIframeExtraction(requestId: string) {
+    setTimeout(() => {
+      if (this.injectFn && this.activeDecryptions.has(requestId)) {
+        this.injectFn(IFRAME_EXTRACT_JS);
+      }
+    }, 2000);
   }
 }

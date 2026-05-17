@@ -25,3 +25,17 @@ export const JWPLAYER_EXTRACT_JS = `javascript:(function(){
     }
   } catch(e) {}
 })();true;`;
+
+/**
+ * Extracts the src attribute of the first iframe on the page
+ * and posts it as EMBED_VIDEO_URL message.
+ * Used for stream wrapper pages that embed the actual player.
+ */
+export const IFRAME_EXTRACT_JS = `javascript:(function(){
+  try {
+    var iframe = document.querySelector('iframe[src]');
+    if (iframe && iframe.src) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({type:'EMBED_VIDEO_URL',data:iframe.src}));
+    }
+  } catch(e) {}
+})();true;`;

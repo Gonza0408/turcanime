@@ -1,4 +1,4 @@
-import { AnimeDetail, Episode } from "../../domain/entities";
+import { AnimeDetail } from "../../domain/entities";
 import { IHtmlParser, IRscParser } from "../../domain/interfaces";
 import { cleanTitle } from "../../utils/text";
 

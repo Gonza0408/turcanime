@@ -55,7 +55,7 @@ export const ContinueWatching = memo(({ items }: ContinueWatchingProps) => {
 });
 
 const styles = StyleSheet.create({
-  sectionContainer: { marginTop: Theme.spacing.xl },
+  sectionContainer: {},
   titleWrapper: {},
   sectionPadding: {},
   card: {

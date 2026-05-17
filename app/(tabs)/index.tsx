@@ -8,7 +8,7 @@ import { Theme } from "@/constants/Theme";
 import { SectionItem, useHomeScreen } from "@/lib/hooks/useHomeScreen";
 import { useTabBarManager } from "@/lib/hooks/useTabBarManager";
 import React, { useEffect } from "react";
-import { FlatList, RefreshControl, StyleSheet } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const HomeContent = React.memo(function HomeContent() {
@@ -45,6 +45,7 @@ const HomeContent = React.memo(function HomeContent() {
           data={sections}
           keyExtractor={(item: SectionItem, index: number) => `${item.type}-${index}`}
           renderItem={renderItem}
+          ItemSeparatorComponent={() => <View style={styles.sectionSeparator} />}
           contentContainerStyle={[styles.mainScroll, { paddingTop: insets.top + Theme.spacing.lg, paddingBottom: TAB_BAR_BOTTOM_OFFSET + insets.bottom }]}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={null}
@@ -77,5 +78,8 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   mainScroll: {
     paddingHorizontal: Theme.edge.horizontal,
+  },
+  sectionSeparator: {
+    height: Theme.spacing.xl,
   },
 });

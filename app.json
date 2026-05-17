@@ -2,7 +2,7 @@
   "expo": {
     "name": "Turcanime",
     "slug": "turcanime",
-    "version": "1.8.0",
+    "version": "1.8.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "turcanime",
@@ -42,9 +42,7 @@
         "expo-build-properties",
         {
           "android": {
-            "buildArchs": [
-              "arm64-v8a"
-            ]
+            "buildArchs": ["arm64-v8a"]
           }
         }
       ]

@@ -1,5 +1,5 @@
 import { FlatList, StyleSheet, View } from "react-native";
-import { GridConfig, searchGridCardWidth } from "@/constants/layout";
+import { searchGridCardWidth } from "@/constants/layout";
 import { Theme } from "@/constants/Theme";
 import { Anime } from "@/lib/domain/entities";
 import React, { memo, useMemo } from "react";
@@ -15,8 +15,7 @@ export const AnimeGridSection = memo(({ label, items }: AnimeGridSectionProps) =
   const cardWidth = searchGridCardWidth();
 
   const columnWrapperStyle = useMemo(() => ({
-    justifyContent: "flex-start" as const,
-    gap: GridConfig.search.gaps.column,
+    justifyContent: "space-between" as const,
   }), []);
 
   if (!items || items.length === 0) return null;
@@ -48,7 +47,7 @@ const styles = StyleSheet.create({
   sectionContainer: { marginTop: Theme.spacing.xl },
   titleWrapper: { paddingHorizontal: Theme.edge.horizontal, marginBottom: Theme.spacing.md },
   listContent: { paddingHorizontal: Theme.edge.horizontal },
-  cardWrapper: { marginBottom: GridConfig.search.gaps.row },
+  cardWrapper: { marginBottom: Theme.spacing.sm },
 });
 
 AnimeGridSection.displayName = "AnimeGridSection";

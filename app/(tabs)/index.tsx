@@ -9,10 +9,12 @@ import { SectionItem, useHomeScreen } from "@/lib/hooks/useHomeScreen";
 import { useTabBarManager } from "@/lib/hooks/useTabBarManager";
 import React, { useEffect } from "react";
 import { FlatList, RefreshControl, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const HomeContent = React.memo(function HomeContent() {
   const { sections, isLoading, error, fetchHome, hasContent } = useHomeScreen();
   const { handleScroll, reset } = useTabBarManager({ threshold: 8 });
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     fetchHome();
@@ -43,7 +45,7 @@ const HomeContent = React.memo(function HomeContent() {
           data={sections}
           keyExtractor={(item: SectionItem, index: number) => `${item.type}-${index}`}
           renderItem={renderItem}
-          contentContainerStyle={styles.mainScroll}
+          contentContainerStyle={[styles.mainScroll, { paddingTop: Theme.spacing.lg, paddingBottom: TAB_BAR_BOTTOM_OFFSET + insets.bottom }]}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={null}
           onScroll={handleScroll}
@@ -73,7 +75,5 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  mainScroll: {
-    paddingBottom: TAB_BAR_BOTTOM_OFFSET,
-  },
+  mainScroll: {},
 });

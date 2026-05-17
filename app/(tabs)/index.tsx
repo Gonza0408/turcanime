@@ -1,7 +1,6 @@
 import { ContinueWatching } from "@/components/home/ContinueWatching";
 import { AnimeGridSection } from "@/components/home/AnimeGridSection";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { WithErrorBoundary } from "@/components/WithErrorBoundary";
 import { TAB_BAR_BOTTOM_OFFSET } from "@/constants/layout";
@@ -42,14 +41,11 @@ const HomeContent = React.memo(function HomeContent() {
       onRetry={() => fetchHome(true)}
     >
       <ThemedView style={styles.root}>
-        <ThemedView style={[styles.header, { paddingTop: insets.top }]}>
-          <ThemedText variant="h1" style={styles.headerTitle}>Turcanime</ThemedText>
-        </ThemedView>
         <FlatList
           data={sections}
           keyExtractor={(item: SectionItem, index: number) => `${item.type}-${index}`}
           renderItem={renderItem}
-          contentContainerStyle={[styles.mainScroll, { paddingBottom: TAB_BAR_BOTTOM_OFFSET + insets.bottom }]}
+          contentContainerStyle={[styles.mainScroll, { paddingTop: insets.top + Theme.spacing.lg, paddingBottom: TAB_BAR_BOTTOM_OFFSET + insets.bottom }]}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={null}
           onScroll={handleScroll}
@@ -79,13 +75,6 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: {
-    paddingHorizontal: Theme.edge.horizontal,
-    paddingBottom: Theme.spacing.md,
-  },
-  headerTitle: {
-    color: Theme.colors.primary,
-  },
   mainScroll: {
     paddingHorizontal: Theme.edge.horizontal,
   },

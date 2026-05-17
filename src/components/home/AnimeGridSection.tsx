@@ -15,7 +15,8 @@ export const AnimeGridSection = memo(({ label, items }: AnimeGridSectionProps) =
   const cardWidth = searchGridCardWidth();
 
   const columnWrapperStyle = useMemo(() => ({
-    justifyContent: "space-between" as const,
+    justifyContent: "flex-start" as const,
+    gap: 10,
   }), []);
 
   if (!items || items.length === 0) return null;

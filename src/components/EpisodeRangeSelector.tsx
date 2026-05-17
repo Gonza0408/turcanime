@@ -45,6 +45,7 @@ export const EpisodeRangeSelector = memo(({
       }, 100);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [activeRangeIdx, ranges.length, isRestoring]);
 
   if (ranges.length <= 1) return null;

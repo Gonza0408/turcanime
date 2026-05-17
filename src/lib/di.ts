@@ -79,7 +79,6 @@ export function initializeDeps(): { deps: AppDependencies; ready: Promise<void> 
 
   const provider = new AnimeLatinoProvider(
     sessionManager,
-    cacheRepo,
     ANIMELATINO_CONFIG.baseUrl,
     orchestrator,
     htmlParser,

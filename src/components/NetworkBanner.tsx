@@ -20,6 +20,7 @@ export const NetworkBanner = ({ visible, onRetry }: NetworkBannerProps) => {
       }, 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [visible, onRetry]);
 
   return (

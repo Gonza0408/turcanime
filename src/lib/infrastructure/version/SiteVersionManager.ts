@@ -5,7 +5,6 @@ import { CacheRepo } from "../../domain/repositories/cacheRepo";
 import { log } from "../../utils/logger";
 
 export class SiteVersionManager implements ISiteVersionManager {
-  private readonly SITE_VERSION_KEY = "site_version";
   private sessionManager: ISessionManager;
   private cache: CacheRepo;
 

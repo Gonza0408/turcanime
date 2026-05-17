@@ -63,7 +63,7 @@ export class PlayerService {
     }
   }
 
-  async resolveStreamUrl(server: VideoServer, episodeUrl?: string): Promise<ResolveStreamResult> {
+  async resolveStreamUrl(server: VideoServer, _episodeUrl?: string): Promise<ResolveStreamResult> {
     const cKey = streamKey(server.url);
 
     const cached = await this.cache.get<ResolvedStream>(cKey);

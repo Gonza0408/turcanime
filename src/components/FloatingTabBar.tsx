@@ -26,7 +26,7 @@ const LABELS: Record<string, string> = {
 
 export function FloatingTabBar({
   state,
-  descriptors,
+  descriptors: _,
   navigation,
 }: FloatingTabBarProps) {
   const insets = useSafeAreaInsets();

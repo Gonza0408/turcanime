@@ -7,7 +7,6 @@ import {
     VideoServer
 } from "../../domain/entities";
 import { IContentProvider, IHtmlParser, IMetricsTracker, IRscParser, ISessionManager, ISiteVersionManager } from "../../domain/interfaces";
-import { CacheRepo } from "../../domain/repositories/cacheRepo";
 import { ProviderError } from "../../utils/errors";
 import { log } from "../../utils/logger";
 import { cleanTitle } from "../../utils/text";
@@ -36,7 +35,6 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
 
   constructor(
     sessionManager: ISessionManager,
-    cacheRepo: CacheRepo,
     baseUrl: string,
     orchestrator: AnimeOrchestrator,
     htmlParser: IHtmlParser,

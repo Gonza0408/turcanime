@@ -115,21 +115,6 @@ export class RscParser implements IRscParser {
     return null;
   }
 
-  extractJson(text: string, key: string, sChar: string, eChar: string): string {
-    const idx = text.indexOf(key);
-    if (idx === -1) return "";
-    const start = text.indexOf(sChar, idx + key.length);
-    if (start === -1) return "";
-    let depth = 1;
-    let end = start + 1;
-    while (depth > 0 && end < text.length) {
-      if (text[end] === sChar) depth++;
-      else if (text[end] === eChar) depth--;
-      end++;
-    }
-    return text.slice(start, end);
-  }
-
   parseAllFromScripts(
     html: string
   ): { poster: string; synopsis: string | null } {

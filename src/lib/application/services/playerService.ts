@@ -60,7 +60,7 @@ export async function fetchEpisodeServers(
   }
 }
 
-export async function resolveStreamUrl(server: VideoServer): Promise<ResolveStreamResult> {
+export async function resolveStreamUrl(server: VideoServer, episodeUrl?: string): Promise<ResolveStreamResult> {
   const cKey = streamKey(server.url);
 
   // Check cache first
@@ -73,7 +73,7 @@ export async function resolveStreamUrl(server: VideoServer): Promise<ResolveStre
   // Resolve via WebView
   logger.debug("playerService", `resolving stream for ${server.url}`);
   try {
-    const result = await getDeps().webViewBridge.resolveStreamUrl(server.url);
+    const result = await getDeps().webViewBridge.resolveStreamUrl(server.url, episodeUrl);
     logger.debug("playerService", `resolved stream: ${result ? "OK" : "null"}`);
 
     if (!result) {

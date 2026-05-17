@@ -127,7 +127,8 @@ function AnimeDetailsContent() {
         servers={servers}
         isLoading={serverLoading}
         onServerSelect={(server) => {
-          resolveStream(server);
+          const episodeUrl = selectedEpisode ? `/ver/${slug}/${selectedEpisode.number}` : undefined;
+          resolveStream(server, episodeUrl);
           setSelectedEpisode(null);
           if (selectedEpisode && anime) {
             navigateToPlayer({

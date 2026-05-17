@@ -1,12 +1,14 @@
+import { CACHE_PREFIXES } from "../../config/cacheKeys";
 import { PLAYER_CACHE } from "../../config/cacheTTLs";
 import { getRequiredReferer } from "../../config/embedServers";
 import { IContentProvider, IWebViewBridge } from "../../domain/interfaces";
 import { VideoServer } from "../../domain/entities";
 import { CacheRepo } from "../../domain/repositories/cacheRepo";
 import { logger } from "../../utils/logger";
+import { createCacheKey } from "../../utils/CacheUtils";
 
 const serverKey = (slug: string, number: string) => `ep_${slug}_${number}`;
-const streamKey = (url: string) => `stream_${url}`;
+const streamKey = (url: string) => createCacheKey(CACHE_PREFIXES.STREAM, url);
 
 export interface ResolvedStream {
   url: string;

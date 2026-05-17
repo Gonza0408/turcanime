@@ -8,6 +8,7 @@ import {
 } from "../../domain/entities";
 import { IContentProvider, IHtmlParser, IMetricsTracker, IRscParser, ISessionManager, ISiteVersionManager } from "../../domain/interfaces";
 import { CacheRepo } from "../../domain/repositories/cacheRepo";
+import { ProviderError } from "../../utils/errors";
 import { log } from "../../utils/logger";
 import { cleanTitle } from "../../utils/text";
 import { ANIMELATINO_CONFIG } from "../../config/providerConfigs";
@@ -67,56 +68,64 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
   }
 
   async search(query: string, options?: { signal?: AbortSignal }): Promise<Anime[]> {
-    try {
-      const res = await this.fetchWithSession(
-        `/api/anime/search?q=${encodeURIComponent(query)}`,
-        options || {}
-      );
-      const json = await res.json();
-      const items = json.data || [];
+    const res = await this.fetchWithSession(
+      `/api/anime/search?q=${encodeURIComponent(query)}`,
+      options || {}
+    );
 
-      if (!Array.isArray(items)) {
-        log("search", `Unexpected response format for query: ${query}`);
-        return [];
-      }
-
-      return items.map((item: { name: string; slug: string; poster: string }) => ({
-        title: cleanTitle(item.name),
-        image: item.poster ? (item.poster.startsWith("http") ? item.poster : `${TMDB_IMAGE_BASE}${item.poster}`) : "",
-        url: item.slug,
-        status: "",
-      }));
-    } catch (e: unknown) {
-      log("search", `Failed for query: ${query}`, e);
-      return [];
+    if (!res.ok) {
+      throw new ProviderError(`HTTP Error: ${res.status}`, "NETWORK_ERROR");
     }
+
+    const json = await res.json();
+    const items = json.data || [];
+
+    if (!Array.isArray(items)) {
+      throw new ProviderError(`Unexpected response format for query: ${query}`, "UNKNOWN");
+    }
+
+    return items.map((item: { name: string; slug: string; poster: string }) => ({
+      title: cleanTitle(item.name),
+      image: item.poster ? (item.poster.startsWith("http") ? item.poster : `${TMDB_IMAGE_BASE}${item.poster}`) : "",
+      url: item.slug,
+      status: "",
+    }));
   }
 
   async getSuggestions(query: string, options?: { signal?: AbortSignal }): Promise<AutocompleteAnime[]> {
-    try {
-      const res = await this.fetchWithSession(
-        `/api/anime/search?q=${encodeURIComponent(query)}`,
-        options || {}
-      );
-      const json = await res.json();
-      const items = json.data || [];
+    const res = await this.fetchWithSession(
+      `/api/anime/search?q=${encodeURIComponent(query)}`,
+      options || {}
+    );
 
-      if (!Array.isArray(items)) return [];
-
-      return items.map((item: { name: string; slug: string; poster: string; type: string }) => ({
-        name: item.name,
-        slug: item.slug,
-        type: item.type,
-        poster: item.poster,
-      }));
-    } catch (e: unknown) {
-      log("getSuggestions", `Failed for: ${query}`, e);
-      return [];
+    if (!res.ok) {
+      throw new ProviderError(`HTTP Error: ${res.status}`, "NETWORK_ERROR");
     }
+
+    const json = await res.json();
+    const items = json.data || [];
+
+    if (!Array.isArray(items)) {
+      throw new ProviderError(`Unexpected response format for query: ${query}`, "UNKNOWN");
+    }
+
+    return items.map((item: { name: string; slug: string; poster: string; type: string }) => ({
+      name: item.name,
+      slug: item.slug,
+      type: item.type,
+      poster: item.poster,
+    }));
   }
 
   async getDetails(slug: string, options?: { signal?: AbortSignal }): Promise<AnimeDetail | null> {
     const res = await this.fetchWithSession(`/anime/${slug}`, options || {});
+    
+    if (res.status === 404) return null;
+    
+    if (!res.ok) {
+      throw new ProviderError(`HTTP Error: ${res.status}`, "NETWORK_ERROR");
+    }
+
     const html = await res.text();
 
     const meta = this.htmlParser.extractMetaTags(html);
@@ -134,8 +143,6 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
 
     const image = rscData.poster || jsonLdImage || meta.banner || "";
 
-    log("getDetails", `poster: ${rscData.poster}, jsonLdImage: ${jsonLdImage}, banner: ${meta.banner}, final: ${image}`);
-
     const result: AnimeDetail = {
       title: cleanTitle(title || meta.title || ""),
       image,
@@ -149,7 +156,7 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
     };
 
     if (!result.title && episodes.length === 0) {
-      log("getDetails", `Failed to parse details for: ${slug}`);
+      throw new ProviderError(`Failed to parse details for: ${slug}`, "UNKNOWN");
     }
 
     return result;
@@ -157,6 +164,11 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
 
   async getEpisodeServers(slug: string, number: string, options?: { signal?: AbortSignal }): Promise<VideoServer[]> {
     const res = await this.fetchWithSession(`/ver/${slug}/${number}`, options || {});
+    
+    if (!res.ok) {
+      throw new ProviderError(`HTTP Error: ${res.status}`, "NETWORK_ERROR");
+    }
+
     const html = await res.text();
 
     const scripts = html.matchAll(/<script[^>]*>(.*?)<\/script>/gs);
@@ -191,38 +203,30 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
           });
         }
 
-        if (servers.length > 0) return servers;
+        return servers; // Return successfully even if empty? Or should we throw?
       } catch (e: unknown) {
         log("getEpisodeServers", `JSON parse failed for ${slug} ep ${number}`, e);
       }
     }
 
-    log("getEpisodeServers", `No Delta servers extracted for ${slug} ep ${number}`);
-    return [];
+    throw new ProviderError(`No Delta servers extracted for ${slug} ep ${number}`, "UNKNOWN");
   }
 
   async resolveStreamUrl(videoUrl: string, options?: { signal?: AbortSignal }): Promise<string | null> {
-    try {
-      const res = await this.fetchWithSession(videoUrl, options || {});
-      if (!res.ok) {
-        log("resolveStreamUrl", `HTTP ${res.status} for ${videoUrl}`);
-        return null;
-      }
-
-      const html = await res.text();
-
-      const iframeMatch = html.match(/<iframe[^>]*src="([^"]+)"[^>]*>/);
-      if (!iframeMatch) {
-        log("resolveStreamUrl", "No iframe found in bridge page");
-        return null;
-      }
-
-      log("resolveStreamUrl", `Extracted iframe URL: ${iframeMatch[1]}`);
-      return iframeMatch[1];
-    } catch (error) {
-      log("resolveStreamUrl", `Failed to resolve ${videoUrl}`, error);
-      return null;
+    const res = await this.fetchWithSession(videoUrl, options || {});
+    if (!res.ok) {
+      throw new ProviderError(`HTTP Error: ${res.status}`, "NETWORK_ERROR");
     }
+
+    const html = await res.text();
+
+    const iframeMatch = html.match(/<iframe[^>]*src="([^"]+)"[^>]*>/);
+    if (!iframeMatch) {
+      throw new ProviderError("No iframe found in bridge page", "UNKNOWN");
+    }
+
+    log("resolveStreamUrl", `Extracted iframe URL: ${iframeMatch[1]}`);
+    return iframeMatch[1];
   }
 
   // ——— Helpers ———

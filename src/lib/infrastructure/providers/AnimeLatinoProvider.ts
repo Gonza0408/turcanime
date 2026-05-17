@@ -16,6 +16,8 @@ import { HtmlParser } from "../parsers/HtmlParser";
 import { RscParser } from "../parsers/RscParser";
 import { SiteVersionManager } from "../version/SiteVersionManager";
 
+const TMDB_POSTER_BASE = "https://image.tmdb.org/t/p/w300";
+
 /**
  * AnimeLatinoProvider - Content provider for AnimeLatinoHD
  *
@@ -64,17 +66,29 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
   }
 
   async search(query: string, options?: { signal?: AbortSignal }): Promise<Anime[]> {
-    const res = await this.fetchWithSession(
-      `/animes?search=${encodeURIComponent(query)}`,
-      options || {}
-    );
-    const html = await res.text();
-    const cards = this.parseCardsWithMetrics(html);
+    try {
+      const res = await this.fetchWithSession(
+        `/api/anime/search?q=${encodeURIComponent(query)}`,
+        options || {}
+      );
+      const json = await res.json();
+      const items = json.data || [];
 
-    if (cards.length === 0) {
-      log("search", `No cards extracted for query: ${query}`);
+      if (!Array.isArray(items)) {
+        log("search", `Unexpected response format for query: ${query}`);
+        return [];
+      }
+
+      return items.map((item: { name: string; slug: string; poster: string }) => ({
+        title: cleanTitle(item.name),
+        image: item.poster ? (item.poster.startsWith("http") ? item.poster : `${TMDB_POSTER_BASE}${item.poster}`) : "",
+        url: item.slug,
+        status: "",
+      }));
+    } catch (e: unknown) {
+      log("search", `Failed for query: ${query}`, e);
+      return [];
     }
-    return cards;
   }
 
   async getSuggestions(query: string, options?: { signal?: AbortSignal }): Promise<AutocompleteAnime[]> {

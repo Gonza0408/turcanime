@@ -94,10 +94,20 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
   async getSuggestions(query: string, options?: { signal?: AbortSignal }): Promise<AutocompleteAnime[]> {
     try {
       const res = await this.fetchWithSession(
-        `/api/search?query=${encodeURIComponent(query)}`,
+        `/api/anime/search?q=${encodeURIComponent(query)}`,
         options || {}
       );
-      return await res.json();
+      const json = await res.json();
+      const items = json.data || [];
+
+      if (!Array.isArray(items)) return [];
+
+      return items.map((item: { name: string; slug: string; poster: string; type: string }) => ({
+        name: item.name,
+        slug: item.slug,
+        type: item.type,
+        poster: item.poster,
+      }));
     } catch (e: unknown) {
       log("getSuggestions", `Failed for: ${query}`, e);
       return [];

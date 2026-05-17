@@ -61,16 +61,17 @@ export function initializeDeps(): { deps: AppDependencies; ready: Promise<void> 
   const rscParser = new RscParser();
   const versionManager = new SiteVersionManager(sessionManager, cacheRepo);
   const metrics = new MetricsTracker(cacheRepo);
+  const imageService = new ImageService();
 
   deps = {
     storage,
     webViewBridge,
     sessionManager,
     getProvider,
-    animeService: new AnimeService(cacheRepo),
-    playerService: new PlayerService(cacheRepo),
+    animeService: new AnimeService(cacheRepo, getProvider, sessionManager, imageService),
+    playerService: new PlayerService(cacheRepo, getProvider, webViewBridge),
     playerUIService: new PlayerUIService(),
-    imageService: new ImageService(),
+    imageService,
     cacheRepo,
   };
 

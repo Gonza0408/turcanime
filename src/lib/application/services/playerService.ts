@@ -1,6 +1,6 @@
 import { PLAYER_CACHE } from "../../config/cacheTTLs";
 import { getRequiredReferer } from "../../config/embedServers";
-import { getDeps } from "../../di";
+import { IContentProvider, IWebViewBridge } from "../../domain/interfaces";
 import { VideoServer } from "../../domain/entities";
 import { CacheRepo } from "../../domain/repositories/cacheRepo";
 import { logger } from "../../utils/logger";
@@ -25,7 +25,11 @@ interface ResolveStreamResult {
 }
 
 export class PlayerService {
-  constructor(private cache: CacheRepo) {}
+  constructor(
+    private cache: CacheRepo,
+    private getProvider: () => IContentProvider,
+    private webViewBridge: IWebViewBridge,
+  ) {}
 
   async fetchEpisodeServers(
     slug: string,
@@ -47,7 +51,7 @@ export class PlayerService {
     }
 
     try {
-      const data = await getDeps().getProvider().getEpisodeServers(slug, number, { signal });
+      const data = await this.getProvider().getEpisodeServers(slug, number, { signal });
       await this.cache.set(cKey, data, PLAYER_CACHE.SERVERS);
       return { servers: data, error: null };
     } catch (e: unknown) {
@@ -70,13 +74,13 @@ export class PlayerService {
 
     logger.debug("playerService", `resolving stream for ${server.url}`);
     try {
-      const iframeUrl = await getDeps().getProvider().resolveStreamUrl(server.url);
+      const iframeUrl = await this.getProvider().resolveStreamUrl(server.url);
       if (!iframeUrl) {
         return { stream: null, error: new Error("Failed to extract iframe URL"), fromCache: false };
       }
       logger.debug("playerService", `extracted iframe URL: ${iframeUrl}`);
 
-      const hlsUrl = await getDeps().webViewBridge.resolveEmbedStreamUrl(iframeUrl);
+      const hlsUrl = await this.webViewBridge.resolveEmbedStreamUrl(iframeUrl);
       if (!hlsUrl) {
         return { stream: null, error: new Error("Failed to resolve HLS stream"), fromCache: false };
       }

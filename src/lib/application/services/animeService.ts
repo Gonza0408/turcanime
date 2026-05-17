@@ -1,9 +1,10 @@
 import { ANIME_CACHE } from "../../config/cacheTTLs";
 import { CACHE_PREFIXES } from "../../config/cacheKeys";
 import { TIMEOUTS } from "../../config/timeouts";
-import { getDeps } from "../../di";
+import { IContentProvider, ISessionManager } from "../../domain/interfaces";
 import { Anime, AnimeDetail, AppError, AutocompleteAnime, HomeData } from "../../domain/entities";
 import { CacheRepo } from "../../domain/repositories/cacheRepo";
+import { ImageService } from "../../infrastructure/services/ImageService";
 import { createCacheKey } from "../../utils/CacheUtils";
 import { logger } from "../../utils/logger";
 
@@ -26,11 +27,15 @@ interface AnimeFetchOptions<T> extends CacheOptions<T> {
 }
 
 export class AnimeService {
-  constructor(private cache: CacheRepo) {}
+  constructor(
+    private cache: CacheRepo,
+    private getProvider: () => IContentProvider,
+    private sessionManager: ISessionManager,
+    private imageService: ImageService,
+  ) {}
 
   private prefetchImages(items: { image?: string }[]): void {
-    const { imageService } = getDeps();
-    imageService.prefetchImages(items);
+    this.imageService.prefetchImages(items);
   }
 
   private async getCachedData<T>(cacheKey: string, force: boolean): Promise<T | null> {
@@ -50,7 +55,7 @@ export class AnimeService {
   ): Promise<FetchResult<T>> {
     try {
       await this.cache.clearWithPrefix(cacheKey);
-      await getDeps().sessionManager.invalidateCookies();
+      await this.sessionManager.invalidateCookies();
 
       const retryController = new AbortController();
       try {
@@ -114,7 +119,7 @@ export class AnimeService {
         cacheKey: CACHE_PREFIXES.HOME,
         cacheTtl: ANIME_CACHE.HOME,
         errorMessage: "Error al cargar la pantalla de inicio",
-        fetchFn: (sig: AbortSignal) => getDeps().getProvider().getHomeData({ signal: sig }),
+        fetchFn: (sig: AbortSignal) => this.getProvider().getHomeData({ signal: sig }),
         force,
         onSuccess: (data: HomeData) => (data.sections || []).forEach((s: { items: Anime[] }) => this.prefetchImages(s.items))
       },
@@ -138,7 +143,7 @@ export class AnimeService {
           const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => reject(new Error("Search timeout")), SEARCH_TIMEOUT);
           });
-          const searchPromise = getDeps().getProvider().search(query, { signal: sig });
+          const searchPromise = this.getProvider().search(query, { signal: sig });
           return await Promise.race([searchPromise, timeoutPromise]);
         },
         force,
@@ -158,7 +163,7 @@ export class AnimeService {
         cacheKey: createCacheKey(CACHE_PREFIXES.SUGGESTIONS, query),
         cacheTtl: ANIME_CACHE.SUGGESTIONS,
         errorMessage: "Error loading suggestions",
-        fetchFn: (sig: AbortSignal) => getDeps().getProvider().getSuggestions(query, { signal: sig }),
+        fetchFn: (sig: AbortSignal) => this.getProvider().getSuggestions(query, { signal: sig }),
         onSuccess: (data: AutocompleteAnime[]) => this.prefetchImages(data.map(item => ({ image: item.poster })))
       },
       signal ?? new AbortController().signal
@@ -172,7 +177,7 @@ export class AnimeService {
         cacheKey: createCacheKey(CACHE_PREFIXES.DETAILS, slug),
         cacheTtl: ANIME_CACHE.DETAILS,
         errorMessage: "Error al cargar los detalles",
-        fetchFn: (sig: AbortSignal) => getDeps().getProvider().getDetails(slug, { signal: sig }),
+        fetchFn: (sig: AbortSignal) => this.getProvider().getDetails(slug, { signal: sig }),
         force,
       },
       signal

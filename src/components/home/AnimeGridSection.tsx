@@ -46,7 +46,7 @@ export const AnimeGridSection = memo(({ label, items }: AnimeGridSectionProps) =
 
 const styles = StyleSheet.create({
   sectionContainer: {},
-  titleWrapper: { marginBottom: Theme.spacing.md },
+  titleWrapper: {},
   listContent: {},
   cardWrapper: { marginBottom: Theme.spacing.sm },
 });

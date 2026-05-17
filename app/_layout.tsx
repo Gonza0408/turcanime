@@ -2,7 +2,7 @@ import { NetworkBanner } from "@/components/NetworkBanner";
 import { Theme } from "@/constants/Theme";
 import { initializeDeps } from "@/lib/di";
 import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
-import { useUserStore } from "@/lib/store/userStore";
+import { useUserInitializationStore } from "@/lib/store/user";
 import { WebViewWorker } from "@/lib/infrastructure/components/WebViewWorker";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -18,7 +18,7 @@ function RootInner() {
     let cancelled = false;
 
     initializeDeps().ready
-      .then(() => useUserStore.getState().initialize())
+      .then(() => useUserInitializationStore.getState().initialize())
       .then(() => {
         if (!cancelled) setReady(true);
       })
@@ -40,10 +40,8 @@ function RootInner() {
 
   return (
     <View style={{ flex: 1, backgroundColor: Theme.colors.background }}>
-      {/* Blocking modal when offline */}
       <NetworkBanner visible={!isInternetReachable} />
-      {/* Translucent status bar for edge-to-edge */}
-      <StatusBar style="light" translucent backgroundColor="transparent" />
+      <StatusBar style="light" />
       <Stack screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',

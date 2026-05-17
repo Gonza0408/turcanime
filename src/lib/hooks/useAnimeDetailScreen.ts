@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { Episode } from "../domain/entities";
 import { usePlayerStore } from "../store/playerStore";
-import { useUserStore } from "../store/userStore";
+import { useSettingsStore } from "../store/user";
 import { useAnimeData } from "./useAnimeData";
 import {
     useEpisodePagination,
@@ -13,7 +13,7 @@ import { useEpisodeUI } from "./useEpisodeUI";
 export function useAnimeDetailScreen(slug: string) {
   const { anime, isLoading: isAnimeLoading, error, hasLoaded, refresh } = useAnimeData(slug);
   const { resolveStream, servers, fetchServers } = usePlayerStore();
-  const { episodeOrder, setEpisodeOrder } = useUserStore();
+  const { episodeOrder, setEpisodeOrder } = useSettingsStore();
   const episodeUI = useEpisodeUI();
 
   const [activeRangeIdx, setActiveRangeIdx, isRestoring] = usePersistedRange(slug);

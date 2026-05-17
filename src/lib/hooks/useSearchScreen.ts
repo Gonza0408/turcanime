@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { useAnimeStore } from "../store/animeStore";
-import { useUserStore } from "../store/userStore";
+import { useSearchStore } from "../store/searchStore";
+import { useSearchHistoryStore } from "../store/user";
 import { navigateToAnime } from "../utils/navigation";
 import { useDebounce } from "./useDebounce";
 
@@ -22,9 +22,9 @@ export function useSearchScreen() {
     setSearchTerm: setStoreSearchTerm,
     resetSearch: resetStoreSearch,
     cancelSearch,
-  } = useAnimeStore();
+  } = useSearchStore();
 
-  const { recentSearches, saveRecentSearch, removeRecentSearch } = useUserStore();
+  const { recentSearches, saveRecentSearch, removeRecentSearch } = useSearchHistoryStore();
 
   const [state, setState] = useState<SearchState>({
     term: lastSearchTerm,

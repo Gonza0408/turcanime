@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimeDetail, AppError } from "../domain/entities";
-import { useAnimeStore } from "../store/animeStore";
+import { useDetailsStore } from "../store/detailsStore";
 import { logger } from "../utils/logger";
 
 interface UseAnimeDataResult {
@@ -17,7 +17,7 @@ export function useAnimeData(slug: string): UseAnimeDataResult {
     isDetailsLoading: isLoading,
     fetchDetails,
     error,
-  } = useAnimeStore();
+  } = useDetailsStore();
 
   const [hasLoaded, setHasLoaded] = useState(false);
 

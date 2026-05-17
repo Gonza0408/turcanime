@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { Anime, HistoryItem } from "../domain/entities";
-import { useAnimeStore } from "../store/animeStore";
-import { useUserStore } from "../store/userStore";
+import { useHomeStore } from "../store/homeStore";
+import { useHistoryStore, useSettingsStore, useUserInitializationStore } from "../store/user";
 
 export type SectionItem =
   | { type: "CONTINUE"; items: HistoryItem[] }
@@ -22,8 +22,10 @@ function buildSections(
 }
 
 export function useHomeScreen() {
-  const { fetchHome, homeData, isHomeLoading, error } = useAnimeStore();
-  const { continueWatching, isInitialized, cacheInvalidationTimestamp } = useUserStore();
+  const { fetchHome, homeData, isHomeLoading, error } = useHomeStore();
+  const { continueWatching } = useHistoryStore();
+  const { cacheInvalidationTimestamp } = useSettingsStore();
+  const { isInitialized } = useUserInitializationStore();
 
   useEffect(() => {
     if (cacheInvalidationTimestamp > 0) {

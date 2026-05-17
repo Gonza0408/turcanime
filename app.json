@@ -13,13 +13,6 @@
       "backgroundColor": "#000000"
     },
     "backgroundColor": "#000000",
-    "androidStatusBar": {
-      "backgroundColor": "#000000",
-      "barStyle": "light-content"
-    },
-    "androidNavigationBar": {
-      "backgroundColor": "#000000"
-    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#000000",

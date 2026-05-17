@@ -3,9 +3,10 @@
  * scattered `router.push()` across components.
  */
 import { router } from "expo-router";
+import { Routes } from "./routes";
 
 export function navigateToAnime(slug: string) {
-  router.push(`/anime/${slug}`);
+  router.push(Routes.ANIME(slug));
 }
 
 export function navigateToPlayer(params: {
@@ -15,7 +16,7 @@ export function navigateToPlayer(params: {
   image: string;
 }) {
   router.push({
-    pathname: "/player",
+    pathname: Routes.PLAYER,
     params,
   });
 }

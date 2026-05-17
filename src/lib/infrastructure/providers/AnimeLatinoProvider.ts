@@ -127,14 +127,19 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
 
     const domSynopsis = this.htmlParser.extractSynopsisFromDom(html);
     const jsonLdSynopsis = this.htmlParser.extractSynopsisFromJsonLd(html);
+    const jsonLdImage = this.htmlParser.extractImageFromJsonLd(html);
     const synopsis = rscData.synopsis || jsonLdSynopsis || domSynopsis || meta.description || "";
+
+    const image = rscData.poster || jsonLdImage || meta.banner || "";
+
+    log("getDetails", `poster: ${rscData.poster}, jsonLdImage: ${jsonLdImage}, banner: ${meta.banner}, final: ${image}`);
 
     const result: AnimeDetail = {
       title: cleanTitle(title || meta.title || ""),
-      image: rscData.poster,
+      image,
       synopsis,
-      banner: meta.banner || rscData.poster,
-      poster: rscData.poster,
+      banner: meta.banner || image,
+      poster: image,
       status,
       genres: [],
       episodes,

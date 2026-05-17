@@ -283,4 +283,19 @@ export class HtmlParser {
       return null;
     }
   }
+
+  extractImageFromJsonLd(html: string): string | null {
+    const jsonLdMatch = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+    if (!jsonLdMatch) return null;
+    try {
+      const data = JSON.parse(jsonLdMatch[1]);
+      if (data.image) {
+        if (typeof data.image === "string") return data.image;
+        if (Array.isArray(data.image) && data.image.length > 0) return data.image[0];
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
 }

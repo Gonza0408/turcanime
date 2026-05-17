@@ -16,13 +16,6 @@ import { HtmlParser } from "../parsers/HtmlParser";
 import { RscParser } from "../parsers/RscParser";
 import { SiteVersionManager } from "../version/SiteVersionManager";
 
-interface RawServerItem {
-  id: string | number;
-  server: { title: string };
-  videoUrlEncrypted: string;
-  languaje: string;
-}
-
 /**
  * AnimeLatinoProvider - Content provider for AnimeLatinoHD
  *
@@ -134,7 +127,6 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
   async getEpisodeServers(slug: string, number: string, options?: { signal?: AbortSignal }): Promise<VideoServer[]> {
     const res = await this.fetchWithSession(`/ver/${slug}/${number}`, options || {});
     const html = await res.text();
-    let servers: VideoServer[] = [];
 
     const scripts = html.matchAll(/<script[^>]*>(.*?)<\/script>/gs);
     for (const match of scripts) {
@@ -142,46 +134,40 @@ export class AnimeLatinoProvider extends AbstractProvider implements IContentPro
       if (!text.includes("self.__next_f.push")) continue;
 
       const p = this.rscParser.parseRscPayload(text);
-      if (!p || !p.includes('"data":[[')) continue;
+      if (!p || !p.includes('"players":')) continue;
 
-      const j = this.rscParser.extractJson(p, '"data":', "[", "]");
+      const j = this.rscParser.extractJson(p, '"players":', "[", "]");
       if (!j) continue;
 
       try {
-        const data = JSON.parse(j);
-        const newServers: VideoServer[] = [];
-        data.forEach((r: RawServerItem[]) =>
-          r.forEach((i: RawServerItem) => {
-            if (!i?.server || i.server.title === "Gamma") return;
-            if (!i.videoUrlEncrypted) {
-              log(
-                "getEpisodeServers",
-                `Missing videoUrlEncrypted for server: ${i.server.title}`
-              );
-              return;
-            }
-            let l = "SUB";
-            if (i.languaje === "1") l = "LATINO";
-            if (i.languaje === "2") l = "CASTELLANO";
-            newServers.push({
-              id: i.id.toString(),
-              title: i.server.title,
-              url: i.videoUrlEncrypted.replace(/\\/g, "/"),
-              language: l,
-            });
-          })
-        );
-        servers = [...servers, ...newServers];
+        const players = JSON.parse(j);
+        const servers: VideoServer[] = [];
+
+        for (const player of players) {
+          if (player.server_name !== "Delta") continue;
+
+          const languageMap: Record<string, string> = {
+            SUB: "SUB",
+            LAT: "LATINO",
+            ESP: "CASTELLANO",
+          };
+
+          servers.push({
+            id: String(player.id),
+            title: player.server_name,
+            url: player.bridge_url,
+            language: languageMap[player.language] || player.language,
+          });
+        }
+
+        if (servers.length > 0) return servers;
       } catch (e: unknown) {
         log("getEpisodeServers", `JSON parse failed for ${slug} ep ${number}`, e);
       }
     }
 
-    if (servers.length === 0) {
-      log("getEpisodeServers", `No servers extracted for ${slug} ep ${number}`);
-    }
-
-    return servers;
+    log("getEpisodeServers", `No Delta servers extracted for ${slug} ep ${number}`);
+    return [];
   }
 
   // ——— Helpers ———
